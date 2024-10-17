@@ -6,6 +6,8 @@ public sealed record BundleDefinition
 {
     public required Info Info { get; init; }
 
+    public required IReadOnlyCollection<Parameter> Parameters { get; init; }
+
     public required IReadOnlyCollection<Registry> Registries { get; init; }
 
     public required IReadOnlyCollection<string> Images { get; init; }
@@ -31,4 +33,11 @@ public sealed record Registry
     public string User { get; init; } = string.Empty;
 
     public string Password { get; init; } = string.Empty;
+}
+
+public sealed record Parameter
+{
+    public required string Name { get; init;}
+
+    public required string Description { get; init;}
 }

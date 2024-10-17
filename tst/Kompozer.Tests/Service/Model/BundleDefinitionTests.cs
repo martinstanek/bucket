@@ -14,6 +14,13 @@ public sealed class BundleDefinitionTests
 
         var definition = JsonSerializer.Deserialize<BundleDefinition>(content);
 
-        definition.ShouldNotBeNull().Info.Name.ShouldBe("TestBundle");
+        definition.ShouldNotBeNull();
+        definition.Info.Name.ShouldBe("TestBundle");
+        definition.Info.Description.ShouldNotBeEmpty();
+        definition.Info.Version.ShouldNotBeEmpty();
+        definition.Images.ShouldNotBeEmpty();
+        definition.Parameters.ShouldNotBeEmpty();
+        definition.Registries.ShouldNotBeEmpty();
+        definition.Stacks.ShouldNotBeEmpty();
     }
 }

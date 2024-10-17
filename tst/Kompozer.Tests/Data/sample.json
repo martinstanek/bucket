@@ -4,6 +4,12 @@
     "Description": "This a first *.kapp defintiion ever ...",
     "Version": "0.1.0"
   },
+  "Parameters": [
+    {
+      "Name": "test_parameter",
+      "Description": "Please provide the test parameter ...."
+    }
+  ],
   "Registries": [
     {
       "Name": "test1",
