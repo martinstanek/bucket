@@ -6,6 +6,8 @@ public sealed record BundleDefinition
 {
     public required Info Info { get; init; }
 
+    public required Configuration Configuration { get; init; }
+
     public required IReadOnlyCollection<Parameter> Parameters { get; init; }
 
     public required IReadOnlyCollection<Registry> Registries { get; init; }
@@ -22,6 +24,11 @@ public sealed record Info
     public required string Description { get; init; }
 
     public required string Version { get; init; }
+}
+
+public sealed record Configuration
+{
+    public required bool FetchImages { get; init; }
 }
 
 public sealed record Registry

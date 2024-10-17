@@ -17,6 +17,7 @@ public sealed class BundleDefinitionTests
         definition.ShouldNotBeNull();
         definition.Info.Name.ShouldBe("TestBundle");
         definition.Info.Description.ShouldNotBeEmpty();
+        definition.Configuration.FetchImages.ShouldBeTrue();
         definition.Info.Version.ShouldNotBeEmpty();
         definition.Images.ShouldNotBeEmpty();
         definition.Parameters.ShouldNotBeEmpty();
