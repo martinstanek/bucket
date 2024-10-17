@@ -1,4 +1,6 @@
-﻿namespace Kompozer.Service.Model;
+﻿using System.Collections.Generic;
+
+namespace Kompozer.Service.Model;
 
 public sealed record BundleDefinition
 {
