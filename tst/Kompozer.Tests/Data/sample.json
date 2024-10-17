@@ -1,0 +1,29 @@
+{
+  "Info": {
+    "Name": "TestBundle",
+    "Description": "This a first *.kapp defintiion ever ...",
+    "Version": "0.1.0"
+  },
+  "Registries": [
+    {
+      "Name": "test1",
+      "Server": "testserver1.io",
+      "User": "user",
+      "Password": "password"
+    },
+    {
+      "Name": "test2",
+      "Server": "testserver2.io",
+      "User": "user",
+      "Password": "password"
+    }
+  ],
+  "Images": [
+    "registry/image1:tag",
+    "registry/image2:tag",
+    "registry/image3:tag"
+  ],
+  "Stacks": [
+    "./test/docker-compose.yml"
+  ]
+}
