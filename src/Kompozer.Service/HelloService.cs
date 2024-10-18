@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Kompozer.Service.Docker;
 using Kompozer.Service.Model;
 using Kompozer.Service.Serialization;
 using Microsoft.Extensions.Hosting;
@@ -12,7 +13,16 @@ namespace Kompozer.Service;
 
 public sealed class HelloService : BackgroundService
 {
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        FindAndReadDefinition();
+
+        var dockerClient = new DockersClient();
+
+        Console.WriteLine(await dockerClient.GetVersionAsync());
+    }
+
+    private static void FindAndReadDefinition()
     {
         Console.WriteLine("Scanning for definitions ..");
 
@@ -22,17 +32,12 @@ public sealed class HelloService : BackgroundService
 
         foreach (var file in files)
         {
-            Console.WriteLine(file);
-
             if (TryParseBundleDefinition(file, out var definition) && definition is not null)
             {
                 Console.WriteLine(definition.Info.Name);
                 Console.WriteLine(definition.Info.Description);
             }
         }
-
-
-        return Task.CompletedTask;
     }
 
     private static bool TryParseBundleDefinition(string path, out BundleDefinition? definition)
