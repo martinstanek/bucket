@@ -51,10 +51,8 @@ public sealed class HelloService : BackgroundService
 
             return true;
         }
-        catch (Exception e)
+        catch
         {
-            Console.WriteLine(e.Message);
-            
             return false;
         }
     }

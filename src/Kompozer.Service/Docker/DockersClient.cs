@@ -28,6 +28,6 @@ public sealed class DockersClient
             line = process.StandardOutput.ReadLine();
         }
 
-        return Task.FromResult(line ?? string.Empty);
+        return Task.FromResult(process.ExitCode + " > " + line);
     }
 }
