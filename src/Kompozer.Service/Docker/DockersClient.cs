@@ -5,7 +5,7 @@ namespace Kompozer.Service.Docker;
 
 public sealed class DockersClient
 {
-    public Task<string> GetVersionAsync()
+    public async Task<string> GetVersionAsync()
     {
         var info = new ProcessStartInfo
         {
@@ -18,16 +18,18 @@ public sealed class DockersClient
 
         if (process is null)
         {
-            return Task.FromResult("");
+            return "";
         }
 
         var line = string.Empty;
 
         while (!process.StandardOutput.EndOfStream)
         {
-            line = process.StandardOutput.ReadLine();
+            line = await process.StandardOutput.ReadLineAsync();
         }
 
-        return Task.FromResult(process.ExitCode + " > " + line);
+        await process.WaitForExitAsync();
+
+        return $"{process.ExitCode} > {line}";
     }
 }
