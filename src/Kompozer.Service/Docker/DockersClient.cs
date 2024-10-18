@@ -7,8 +7,27 @@ public sealed class DockersClient
 {
     public Task<string> GetVersionAsync()
     {
-        var response = Process.Start("docker", "--version");
+        var info = new ProcessStartInfo
+        {
+            FileName = "docker",
+            Arguments = "--version",
+            RedirectStandardOutput = true
+        };
 
-        return Task.FromResult("");
+        var process = Process.Start(info);
+
+        if (process is null)
+        {
+            return Task.FromResult("");
+        }
+
+        var line = string.Empty;
+
+        while (!process.StandardOutput.EndOfStream)
+        {
+            line = process.StandardOutput.ReadLine();
+        }
+
+        return Task.FromResult(line ?? string.Empty);
     }
 }
