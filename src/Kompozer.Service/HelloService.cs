@@ -82,7 +82,7 @@ public sealed class HelloService : BackgroundService
         await using var fs = new FileStream(bundleName, FileMode.CreateNew, FileAccess.Write);
         await using var gz = new GZipStream(fs, CompressionMode.Compress, leaveOpen: true);
 
-        await TarFile.CreateFromDirectoryAsync(bundleDirectory, bundleName, includeBaseDirectory: false);
+        await TarFile.CreateFromDirectoryAsync(bundleDirectory, gz, includeBaseDirectory: false);
     }
 
     private static bool TryFindBundleDefinition(out BundleDefinition? definition)

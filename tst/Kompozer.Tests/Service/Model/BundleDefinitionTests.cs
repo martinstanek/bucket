@@ -10,7 +10,7 @@ public sealed class BundleDefinitionTests
     [Fact]
     public void Test()
     {
-        var content = File.ReadAllText("Data/sample.json");
+        var content = File.ReadAllText("Data/real.json");
 
         var definition = JsonSerializer.Deserialize<BundleDefinition>(content);
 
