@@ -9,6 +9,7 @@ using Kompozer.Service.Docker;
 using Kompozer.Service.Model;
 using Kompozer.Service.Serialization;
 using System.Formats.Tar;
+using System.IO.Compression;
 
 namespace Kompozer.Service;
 
@@ -73,10 +74,13 @@ public sealed class HelloService : BackgroundService
 
         foreach (var bundleDefinitionStack in bundleDefinition.Stacks)
         {
-            CopyDirectory(bundleDefinitionStack, bundleDirectory);
+            CopyDirectory(bundleDefinitionStack, Path.Combine(bundleDirectory, bundleDefinitionStack));
         }
         
-        var bundleName = $"./{bundleDefinition.Info.Name}.kapp";
+        var bundleName = $"./{bundleDefinition.Info.Name}.dap.tar.gz";
+
+        await using var fs = new FileStream(bundleName, FileMode.CreateNew, FileAccess.Write);
+        await using var gz = new GZipStream(fs, CompressionMode.Compress, leaveOpen: true);
 
         await TarFile.CreateFromDirectoryAsync(bundleDirectory, bundleName, includeBaseDirectory: false);
     }
