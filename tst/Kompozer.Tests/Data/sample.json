@@ -28,9 +28,14 @@
     }
   ],
   "Images": [
-    "registry/image1:tag",
-    "registry/image2:tag",
-    "registry/image3:tag"
+    {
+      "Alias": "inage1",
+      "FullName": "registry/image1:tag"
+    },
+    {
+      "Alias": "inage2",
+      "FullName": "registry/image2:tag"
+    }
   ],
   "Stacks": [
     "./test/docker-compose.yml"

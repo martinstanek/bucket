@@ -12,7 +12,7 @@ public sealed record BundleDefinition
 
     public required IReadOnlyCollection<Registry> Registries { get; init; }
 
-    public required IReadOnlyCollection<string> Images { get; init; }
+    public required IReadOnlyCollection<Image> Images { get; init; }
 
     public required IReadOnlyCollection<string> Stacks { get; init; }
 }
@@ -29,6 +29,13 @@ public sealed record Info
 public sealed record Configuration
 {
     public required bool FetchImages { get; init; }
+}
+
+public sealed record Image
+{
+    public required string Alias { get; init; }
+
+    public required string FullName { get; init; }
 }
 
 public sealed record Registry

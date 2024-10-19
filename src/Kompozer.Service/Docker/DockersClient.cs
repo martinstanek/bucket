@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Ardalis.GuardClauses;
 
 namespace Kompozer.Service.Docker;
 
@@ -13,22 +14,27 @@ public sealed class DockersClient
 
     public Task<string> PullImageAsync(string fullImageName)
     {
+        Guard.Against.NullOrWhiteSpace(fullImageName);
+        
         return RunDockerProcessAsync($"pull {fullImageName}");
     }
 
     public async Task<string> ExportImageAsync(string fullImageName, string outputFile)
     {
+        Guard.Against.NullOrWhiteSpace(fullImageName);
+        Guard.Against.NullOrWhiteSpace(outputFile);
+
         var id = await RunDockerProcessAsync($"create {fullImageName}");
 
         return await RunDockerProcessAsync($"export {id} -o {outputFile}");
     }
 
-    private Task<string> RunDockerProcessAsync(string arguments)
+    private static Task<string> RunDockerProcessAsync(string arguments)
     {
         return RunProcessAsync("docker", arguments);
     }
 
-    private async Task<string> RunProcessAsync(string name, string arguments)
+    private static async Task<string> RunProcessAsync(string name, string arguments)
     {
         var info = new ProcessStartInfo
         {
