@@ -1,16 +1,39 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Kompozer.Service.Docker;
 
 public sealed class DockersClient
 {
-    public async Task<string> GetVersionAsync()
+    public Task<string> GetVersionAsync()
+    {
+        return RunDockerProcessAsync("--version");
+    }
+
+    public Task<string> PullImageAsync(string fullImageName)
+    {
+        return RunDockerProcessAsync($"pull {fullImageName}");
+    }
+
+    public async Task<string> ExportImageAsync(string fullImageName, string outputFile)
+    {
+        var id = await RunDockerProcessAsync($"create {fullImageName}");
+
+        return await RunDockerProcessAsync($"export {id} -o {outputFile}");
+    }
+
+    private Task<string> RunDockerProcessAsync(string arguments)
+    {
+        return RunProcessAsync("docker", arguments);
+    }
+
+    private async Task<string> RunProcessAsync(string name, string arguments)
     {
         var info = new ProcessStartInfo
         {
-            FileName = "docker",
-            Arguments = "--version",
+            FileName = name,
+            Arguments = arguments,
             RedirectStandardOutput = true
         };
 
@@ -18,18 +41,23 @@ public sealed class DockersClient
 
         if (process is null)
         {
-            return "";
+            throw new InvalidOperationException("Process can not be executed");
         }
 
-        var line = string.Empty;
+        var output = string.Empty;
 
         while (!process.StandardOutput.EndOfStream)
         {
-            line = await process.StandardOutput.ReadLineAsync();
+            output = await process.StandardOutput.ReadLineAsync();
         }
 
         await process.WaitForExitAsync();
 
-        return $"{process.ExitCode} > {line}";
+        if (process.ExitCode != 0)
+        {
+            throw new InvalidOperationException("Process did not exited with the expected response code");
+        }
+
+        return output ?? string.Empty;
     }
 }

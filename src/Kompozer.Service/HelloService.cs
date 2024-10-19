@@ -4,22 +4,29 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
 using Kompozer.Service.Docker;
 using Kompozer.Service.Model;
 using Kompozer.Service.Serialization;
-using Microsoft.Extensions.Hosting;
 
 namespace Kompozer.Service;
 
 public sealed class HelloService : BackgroundService
 {
+    private readonly DockersClient _dockerClient;
+
+    public HelloService(DockersClient dockersClient)
+    {
+        _dockerClient = dockersClient;
+    }
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         FindAndReadDefinition();
 
-        var dockerClient = new DockersClient();
-
-        Console.WriteLine(await dockerClient.GetVersionAsync());
+        Console.WriteLine(await _dockerClient.GetVersionAsync());
+        Console.WriteLine(await _dockerClient.PullImageAsync("docker.io/nginx:1.23.4"));
+        Console.WriteLine(await _dockerClient.ExportImageAsync("docker.io/nginx:1.23.4", "/Users/martinstanek/Desktop/image.tar"));
     }
 
     private static void FindAndReadDefinition()
