@@ -33,6 +33,8 @@ public sealed class HelloService : BackgroundService
         
         var imagesDir = await PrepareBundleAsync(bundleDefinition);
 
+        Console.WriteLine("Creating bundle ...");
+
         await PackBundleAsync(bundleDefinition, imagesDir);
 
         Console.WriteLine("Done");
