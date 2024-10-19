@@ -7,7 +7,7 @@ using Kompozer.Host.Extensions;
 var builder = Host.CreateApplicationBuilder(args);
 
 builder.Logging.SetDefaultLevels();
-builder.Services.AddSingleton<DockersClient>();
+builder.Services.AddSingleton<DockerClient>();
 builder.Services.AddHostedService<HelloService>();
 
 var host = builder.Build();

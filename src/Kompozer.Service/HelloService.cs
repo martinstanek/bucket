@@ -15,10 +15,12 @@ namespace Kompozer.Service;
 
 public sealed class HelloService : BackgroundService
 {
-    private readonly DockersClient _dockerClient;
+    private readonly IHostApplicationLifetime _lifetime;
+    private readonly DockerClient _dockerClient;
 
-    public HelloService(DockersClient dockersClient)
+    public HelloService(IHostApplicationLifetime lifetime, DockerClient dockersClient)
     {
+        _lifetime = lifetime;
         _dockerClient = dockersClient;
     }
 
@@ -34,11 +36,11 @@ public sealed class HelloService : BackgroundService
         
         var imagesDir = await PrepareBundleAsync(bundleDefinition);
 
-        Console.WriteLine("Creating bundle ...");
-
         await PackBundleAsync(bundleDefinition, imagesDir);
 
         Console.WriteLine("Done");
+
+        _lifetime.StopApplication();
     }
 
     private async Task<string> PrepareBundleAsync(BundleDefinition bundleDefinition)
@@ -58,7 +60,11 @@ public sealed class HelloService : BackgroundService
 
         foreach (var image in bundleDefinition.Images)
         {
-            Console.WriteLine(await _dockerClient.ExportImageAsync(image.FullName, Path.Combine(exportDirectory, $"{image.Alias}.tar")));
+            var imageName = $"{image.Alias}.tar";
+            
+            await _dockerClient.ExportImageAsync(image.FullName, Path.Combine(exportDirectory, imageName));
+            
+            Console.WriteLine(imageName);
         }
 
         return exportDirectory;
@@ -66,6 +72,10 @@ public sealed class HelloService : BackgroundService
 
     private static async Task PackBundleAsync(BundleDefinition bundleDefinition, string imagesDirectory)
     {
+        var bundleName = $"./{bundleDefinition.Info.Name}.dap.tar.gz";
+
+        Console.WriteLine($"Creating bundle: {bundleName}");
+
         var bundleDirectory = Path.Combine(AppContext.BaseDirectory, "_bundle");
 
         Directory.CreateDirectory(bundleDirectory);
@@ -77,8 +87,6 @@ public sealed class HelloService : BackgroundService
             CopyDirectory(bundleDefinitionStack, Path.Combine(bundleDirectory, bundleDefinitionStack));
         }
         
-        var bundleName = $"./{bundleDefinition.Info.Name}.dap.tar.gz";
-
         await using var fs = new FileStream(bundleName, FileMode.CreateNew, FileAccess.Write);
         await using var gz = new GZipStream(fs, CompressionMode.Compress, leaveOpen: true);
 

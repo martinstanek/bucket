@@ -5,7 +5,7 @@ using Ardalis.GuardClauses;
 
 namespace Kompozer.Service.Docker;
 
-public sealed class DockersClient
+public sealed class DockerClient
 {
     public Task<string> GetVersionAsync()
     {
