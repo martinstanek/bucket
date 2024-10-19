@@ -8,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using Kompozer.Service.Docker;
 using Kompozer.Service.Model;
 using Kompozer.Service.Serialization;
+using System.Diagnostics;
 
 namespace Kompozer.Service;
 
@@ -22,29 +23,49 @@ public sealed class HelloService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        FindAndReadDefinition();
+        if (!TryFindBundleDefinition(out var bundleDefinition) || bundleDefinition is null)
+        {
+            Console.WriteLine("No bundle definition has been found ...");
+            return;
+        }
 
         Console.WriteLine(await _dockerClient.GetVersionAsync());
-        Console.WriteLine(await _dockerClient.PullImageAsync("docker.io/nginx:1.23.4"));
-        Console.WriteLine(await _dockerClient.ExportImageAsync("docker.io/nginx:1.23.4", "/Users/martinstanek/Desktop/image.tar"));
+        Console.WriteLine("Pulling images ...");
+
+        foreach (var image in bundleDefinition.Images)
+        {
+            Console.WriteLine(await _dockerClient.PullImageAsync(image.FullName));
+        }
+
+        var exportDirectory = Path.Combine(AppContext.BaseDirectory, "_images");
+        
+        Directory.CreateDirectory(exportDirectory);
+
+        Console.WriteLine($"Exporting images into: {exportDirectory}");
+
+        foreach (var image in bundleDefinition.Images)
+        {
+            Console.WriteLine(await _dockerClient.ExportImageAsync(image.FullName, Path.Combine(exportDirectory, $"{image.Alias}.tar")));
+        }
     }
 
-    private static void FindAndReadDefinition()
+    private static bool TryFindBundleDefinition(out BundleDefinition? definition)
     {
-        Console.WriteLine("Scanning for definitions ..");
+        definition = default;
 
         var workDir = AppContext.BaseDirectory;
-        var files = Directory.GetFiles(workDir)
-            .Where(f => f.EndsWith("json", StringComparison.OrdinalIgnoreCase));
+        var files = Directory.GetFiles(workDir).Where(f => f.EndsWith("json", StringComparison.OrdinalIgnoreCase));
 
         foreach (var file in files)
         {
-            if (TryParseBundleDefinition(file, out var definition) && definition is not null)
+            if (TryParseBundleDefinition(file, out var bundleDefinition) && bundleDefinition is not null)
             {
-                Console.WriteLine(definition.Info.Name);
-                Console.WriteLine(definition.Info.Description);
+                definition = bundleDefinition;
+                return true;
             }
         }
+
+        return false;
     }
 
     private static bool TryParseBundleDefinition(string path, out BundleDefinition? definition)
