@@ -53,7 +53,7 @@ public sealed class HelloService : BackgroundService
             Console.WriteLine(await _dockerClient.PullImageAsync(image.FullName));
         }
 
-        var exportDirectory = Path.Combine(AppContext.BaseDirectory, "_images");
+        var exportDirectory = Path.Combine(AppContext.BaseDirectory, "_export");
 
         Directory.CreateDirectory(exportDirectory);
         Console.WriteLine($"Exporting images into: {exportDirectory}");
@@ -71,20 +71,25 @@ public sealed class HelloService : BackgroundService
         return exportDirectory;
     }
 
-    private static async Task PackBundleAsync(BundleDefinition bundleDefinition, string imagesDirectory, string definitionPath)
+    private static async Task PackBundleAsync(BundleDefinition bundleDefinition, string exportDirectory, string definitionPath)
     {
+        Console.WriteLine("Creating bundle");
+
         var bundleName = $"./{bundleDefinition.Info.Name}.dap.tar.gz";
         var bundleDirectory = Path.Combine(AppContext.BaseDirectory, "_bundle");
+        var exportBundleDirectory = Path.Combine(bundleDirectory, "_export");
+        var stacksBundleDirectory = Path.Combine(bundleDirectory, "_stacks");
 
-        Console.WriteLine($"Creating bundle: {bundleName}");
         Directory.CreateDirectory(bundleDirectory);
+        Directory.CreateDirectory(exportBundleDirectory);
+
         File.Copy(definitionPath, Path.Combine(bundleDirectory, Path.GetFileName(definitionPath)));
         
-        CopyDirectory(imagesDirectory, bundleDirectory);
+        CopyDirectory(exportDirectory, exportBundleDirectory);
 
         foreach (var bundleDefinitionStack in bundleDefinition.Stacks)
         {
-            CopyDirectory(bundleDefinitionStack, Path.Combine(bundleDirectory, bundleDefinitionStack));
+            CopyDirectory(bundleDefinitionStack, Path.Combine(stacksBundleDirectory, bundleDefinitionStack));
         }
         
         await using var fs = new FileStream(bundleName, FileMode.CreateNew, FileAccess.Write);
@@ -95,7 +100,7 @@ public sealed class HelloService : BackgroundService
         Console.WriteLine("Cleaning ...");
 
         Directory.Delete(bundleDirectory, recursive: true);
-        Directory.Delete(imagesDirectory, recursive: true);
+        Directory.Delete(exportDirectory, recursive: true);
     }
 
     private static bool TryFindBundleDefinition(out BundleDefinition? definition, out string definitionPath)
