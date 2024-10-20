@@ -61,7 +61,7 @@ public sealed class BundleService
             throw new InvalidOperationException("Can't find the manifest file");
         }
 
-        if (Directory.Exists(workDir))
+        if (!Directory.Exists(workDir))
         {
             throw new InvalidOperationException("Working directory does not exist.");
         }
