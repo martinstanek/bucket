@@ -73,7 +73,7 @@ public sealed class HelloService : BackgroundService
 
     private static async Task PackBundleAsync(BundleDefinition bundleDefinition, string imagesDirectory, string definitionPath)
     {
-        var bundleName = $"./{bundleDefinition.Info.BundleName}.dap.tar.gz";
+        var bundleName = $"./{bundleDefinition.Info.Name}.dap.tar.gz";
         var bundleDirectory = Path.Combine(AppContext.BaseDirectory, "_bundle");
 
         Console.WriteLine($"Creating bundle: {bundleName}");
