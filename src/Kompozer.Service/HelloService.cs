@@ -94,8 +94,8 @@ public sealed class HelloService : BackgroundService
 
         Console.WriteLine("Cleaning ...");
 
-        Directory.Delete(bundleDirectory);
-        Directory.Delete(imagesDirectory);
+        Directory.Delete(bundleDirectory, recursive: true);
+        Directory.Delete(imagesDirectory, recursive: true);
     }
 
     private static bool TryFindBundleDefinition(out BundleDefinition? definition, out string definitionPath)
