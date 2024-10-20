@@ -23,6 +23,8 @@ public sealed record Info
 
     public required string Description { get; init; }
 
+    public required string BundleName { get; init; }
+
     public required string Version { get; init; }
 }
 

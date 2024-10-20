@@ -26,7 +26,7 @@ public sealed class HelloService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        if (!TryFindBundleDefinition(out var bundleDefinition) || bundleDefinition is null)
+        if (!TryFindBundleDefinition(out var bundleDefinition, out var definitionPath) || bundleDefinition is null)
         {
             Console.WriteLine("No bundle definition has been found ...");
             return;
@@ -36,7 +36,7 @@ public sealed class HelloService : BackgroundService
         
         var imagesDir = await PrepareBundleAsync(bundleDefinition);
 
-        await PackBundleAsync(bundleDefinition, imagesDir);
+        await PackBundleAsync(bundleDefinition, imagesDir, definitionPath);
 
         Console.WriteLine("Done");
 
@@ -71,15 +71,14 @@ public sealed class HelloService : BackgroundService
         return exportDirectory;
     }
 
-    private static async Task PackBundleAsync(BundleDefinition bundleDefinition, string imagesDirectory)
+    private static async Task PackBundleAsync(BundleDefinition bundleDefinition, string imagesDirectory, string definitionPath)
     {
-        var bundleName = $"./{bundleDefinition.Info.Name}.dap.tar.gz";
-
-        Console.WriteLine($"Creating bundle: {bundleName}");
-
+        var bundleName = $"./{bundleDefinition.Info.BundleName}.dap.tar.gz";
         var bundleDirectory = Path.Combine(AppContext.BaseDirectory, "_bundle");
 
+        Console.WriteLine($"Creating bundle: {bundleName}");
         Directory.CreateDirectory(bundleDirectory);
+        File.Copy(definitionPath, Path.Combine(bundleDirectory, Path.GetFileName(definitionPath)));
         
         CopyDirectory(imagesDirectory, bundleDirectory);
 
@@ -92,11 +91,17 @@ public sealed class HelloService : BackgroundService
         await using var gz = new GZipStream(fs, CompressionMode.Compress, leaveOpen: true);
 
         await TarFile.CreateFromDirectoryAsync(bundleDirectory, gz, includeBaseDirectory: false);
+
+        Console.WriteLine("Cleaning ...");
+
+        Directory.Delete(bundleDirectory);
+        Directory.Delete(imagesDirectory);
     }
 
-    private static bool TryFindBundleDefinition(out BundleDefinition? definition)
+    private static bool TryFindBundleDefinition(out BundleDefinition? definition, out string definitionPath)
     {
         definition = default;
+        definitionPath = string.Empty;
 
         var workDir = AppContext.BaseDirectory;
         var files = Directory.GetFiles(workDir).Where(f => f.EndsWith("json", StringComparison.OrdinalIgnoreCase));
@@ -106,6 +111,8 @@ public sealed class HelloService : BackgroundService
             if (TryParseBundleDefinition(file, out var bundleDefinition) && bundleDefinition is not null)
             {
                 definition = bundleDefinition;
+                definitionPath = file;
+
                 return true;
             }
         }

@@ -25,7 +25,6 @@ public sealed class DockerClient
         Guard.Against.NullOrWhiteSpace(outputFile);
 
         var id = await RunDockerProcessAsync($"create {fullImageName}");
-
         await RunDockerProcessAsync($"export {id} -o {outputFile}");
         await RunDockerProcessAsync($"container rm {id}");
     }

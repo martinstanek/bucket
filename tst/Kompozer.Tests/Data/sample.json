@@ -2,7 +2,8 @@
   "Info": {
     "Name": "TestBundle",
     "Description": "This a first *.kapp defintiion ever ...",
-    "Version": "0.1.0"
+    "Version": "0.1.0",
+    "BundleName": "test"
   },
   "Configuration": {
     "FetchImages": true
