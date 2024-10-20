@@ -19,14 +19,15 @@ public sealed class DockerClient
         return RunDockerProcessAsync($"pull {fullImageName}");
     }
 
-    public async Task<string> ExportImageAsync(string fullImageName, string outputFile)
+    public async Task ExportImageAsync(string fullImageName, string outputFile)
     {
         Guard.Against.NullOrWhiteSpace(fullImageName);
         Guard.Against.NullOrWhiteSpace(outputFile);
 
         var id = await RunDockerProcessAsync($"create {fullImageName}");
 
-        return await RunDockerProcessAsync($"export {id} -o {outputFile}");
+        await RunDockerProcessAsync($"export {id} -o {outputFile}");
+        await RunDockerProcessAsync($"container rm {id}");
     }
 
     private static Task<string> RunDockerProcessAsync(string arguments)

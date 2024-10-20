@@ -61,8 +61,9 @@ public sealed class HelloService : BackgroundService
         foreach (var image in bundleDefinition.Images)
         {
             var imageName = $"{image.Alias}.tar";
+            var fullPath = Path.Combine(exportDirectory, imageName);
             
-            await _dockerClient.ExportImageAsync(image.FullName, Path.Combine(exportDirectory, imageName));
+            await _dockerClient.ExportImageAsync(image.FullName, fullPath);
             
             Console.WriteLine(imageName);
         }
