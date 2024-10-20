@@ -5,14 +5,14 @@ using Xunit;
 
 namespace Kompozer.Tests.Service.Model;
 
-public sealed class BundleDefinitionTests
+public sealed class BundleManifestTests
 {
     [Fact]
     public void Test()
     {
         var content = File.ReadAllText("Data/sample.json");
 
-        var definition = JsonSerializer.Deserialize<BundleDefinition>(content);
+        var definition = JsonSerializer.Deserialize<BundleManifest>(content);
 
         definition.ShouldNotBeNull();
         definition.Info.Name.ShouldBe("TestBundle");

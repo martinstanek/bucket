@@ -3,9 +3,9 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Ardalis.GuardClauses;
 
-namespace Kompozer.Service.Docker;
+namespace Kompozer.Service.Services;
 
-public sealed class DockerClient
+public sealed class DockerService
 {
     public Task<string> GetVersionAsync()
     {
@@ -15,7 +15,7 @@ public sealed class DockerClient
     public Task<string> PullImageAsync(string fullImageName)
     {
         Guard.Against.NullOrWhiteSpace(fullImageName);
-        
+
         return RunDockerProcessAsync($"pull {fullImageName}");
     }
 

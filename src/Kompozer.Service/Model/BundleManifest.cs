@@ -2,7 +2,7 @@
 
 namespace Kompozer.Service.Model;
 
-public sealed record BundleDefinition
+public sealed record BundleManifest
 {
     public required Info Info { get; init; }
 
