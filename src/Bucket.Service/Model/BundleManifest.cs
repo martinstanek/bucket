@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Kompozer.Service.Model;
+namespace Bucket.Service.Model;
 
 public sealed record BundleManifest
 {

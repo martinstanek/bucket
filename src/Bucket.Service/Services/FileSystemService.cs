@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace Kompozer.Service.Services;
+namespace Bucket.Service.Services;
 
 public sealed class FileSystemService
 {

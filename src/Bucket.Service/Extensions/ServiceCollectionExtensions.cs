@@ -1,7 +1,7 @@
-﻿using Kompozer.Service.Services;
+﻿using Bucket.Service.Services;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Kompozer.Service.Extensions;
+namespace Bucket.Service.Extensions;
 
 public static class ServiceCollectionExtensions
 {

@@ -1,6 +1,6 @@
-﻿using Microsoft.Extensions.Hosting;
-using Kompozer.Host.Extensions;
-using Kompozer.Service.Extensions;
+﻿using Bucket.Host.Extensions;
+using Bucket.Service.Extensions;
+using Microsoft.Extensions.Hosting;
 
 var builder = Host.CreateApplicationBuilder(args);
 

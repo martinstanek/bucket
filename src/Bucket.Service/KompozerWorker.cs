@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Bucket.Service.Services;
 using Microsoft.Extensions.Hosting;
-using Kompozer.Service.Services;
 
-namespace Kompozer.Service;
+namespace Bucket.Service;
 
 public sealed class KompozerWorker : BackgroundService
 {

@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace Kompozer.Host.Extensions;
+namespace Bucket.Host.Extensions;
 
 internal static class LoggingBuilderExtensions
 {

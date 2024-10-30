@@ -1,15 +1,15 @@
-﻿using Kompozer.Service.Model;
-using Kompozer.Service.Serialization;
+﻿using System;
 using System.Formats.Tar;
-using System.IO.Compression;
 using System.IO;
+using System.IO.Compression;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using System;
-using System.Linq;
 using Ardalis.GuardClauses;
+using Bucket.Service.Model;
+using Bucket.Service.Serialization;
 
-namespace Kompozer.Service.Services;
+namespace Bucket.Service.Services;
 
 public sealed class BundleService
 {

@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Ardalis.GuardClauses;
 
-namespace Kompozer.Service.Services;
+namespace Bucket.Service.Services;
 
 public sealed class DockerService
 {

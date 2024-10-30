@@ -1,9 +1,9 @@
-﻿using Kompozer.Service.Model;
+﻿using System.Text.Json;
+using Bucket.Service.Model;
 using Shouldly;
-using System.Text.Json;
 using Xunit;
 
-namespace Kompozer.Tests.Service.Model;
+namespace Bucket.Tests.Service.Model;
 
 public sealed class BundleManifestTests
 {
