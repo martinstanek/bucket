@@ -3,8 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Bucket.Service.Options;
 using Bucket.Service.Services;
-using CommandLine;
-using CommandLine.Text;
 using Microsoft.Extensions.Hosting;
 
 namespace Bucket.Service;
@@ -12,18 +10,22 @@ namespace Bucket.Service;
 public sealed class BucketWorker : BackgroundService
 {
     private readonly BundleService _bundleService;
-    private readonly ParserResult<Actions> _actions;
+    private readonly Arguments _arguments;
     private readonly IHostApplicationLifetime _lifetime;
     
-    public BucketWorker(BundleService bundleService, ParserResult<Actions> actions, IHostApplicationLifetime lifetime)
+    public BucketWorker(BundleService bundleService, Arguments arguments, IHostApplicationLifetime lifetime)
     {
         _bundleService = bundleService;
-        _actions = actions;
+        _arguments = arguments;
         _lifetime = lifetime;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        var help = _arguments.GetHelp();
+        
+        Console.WriteLine(help);
+        
         if (!await _bundleService.IsDockerRunningAsync())
         {
             _lifetime.StopApplication();
