@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Kompozer.Service\Kompozer.Service.csproj" />
+    <ProjectReference Include="..\Bucket.Service\Bucket.Service.csproj" />
   </ItemGroup>
 
 </Project>
