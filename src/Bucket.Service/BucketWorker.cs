@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Bucket.Service.Options;
 using Bucket.Service.Services;
+using CommandLine;
+using CommandLine.Text;
 using Microsoft.Extensions.Hosting;
 
 namespace Bucket.Service;
@@ -9,11 +12,13 @@ namespace Bucket.Service;
 public sealed class BucketWorker : BackgroundService
 {
     private readonly BundleService _bundleService;
+    private readonly ParserResult<Actions> _actions;
     private readonly IHostApplicationLifetime _lifetime;
     
-    public BucketWorker(BundleService bundleService, IHostApplicationLifetime lifetime)
+    public BucketWorker(BundleService bundleService, ParserResult<Actions> actions, IHostApplicationLifetime lifetime)
     {
         _bundleService = bundleService;
+        _actions = actions;
         _lifetime = lifetime;
     }
 
