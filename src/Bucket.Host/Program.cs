@@ -5,5 +5,5 @@ using Microsoft.Extensions.Hosting;
 var builder = Host.CreateApplicationBuilder(args);
 
 builder.Logging.SetDefaultLevels();
-builder.Services.AddKompozer();
+builder.Services.AddBucket();
 builder.Build().Run();

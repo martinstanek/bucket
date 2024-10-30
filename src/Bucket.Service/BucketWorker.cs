@@ -6,12 +6,12 @@ using Microsoft.Extensions.Hosting;
 
 namespace Bucket.Service;
 
-public sealed class KompozerWorker : BackgroundService
+public sealed class BucketWorker : BackgroundService
 {
     private readonly BundleService _bundleService;
     private readonly IHostApplicationLifetime _lifetime;
     
-    public KompozerWorker(BundleService bundleService, IHostApplicationLifetime lifetime)
+    public BucketWorker(BundleService bundleService, IHostApplicationLifetime lifetime)
     {
         _bundleService = bundleService;
         _lifetime = lifetime;
@@ -19,8 +19,13 @@ public sealed class KompozerWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await _bundleService.CheckDockerAsync();
-        
+        if (!await _bundleService.IsDockerRunningAsync())
+        {
+            _lifetime.StopApplication();
+            
+            return;
+        }
+
         if (!_bundleService.TryFindBundleManifest(out var manifest, out var manifestPath) || manifest is null)
         {
             Console.WriteLine("No bundle manifest has been found.");

@@ -44,11 +44,22 @@ public sealed class BundleService
         return false;
     }
 
-    public async Task CheckDockerAsync()
+    public async Task<bool> IsDockerRunningAsync()
     {
-        var version = await _dockerService.GetVersionAsync();
+        try
+        {
+            var version = await _dockerService.GetVersionAsync();
         
-        Console.WriteLine(version);
+            Console.WriteLine(version);
+
+            return true;
+        }
+        catch
+        {
+            Console.WriteLine("Docker is not running.");
+        }
+
+        return false;
     }
 
     public async Task CreateBundleAsync(BundleManifest bundleManifest, string manifestPath, string workDir)

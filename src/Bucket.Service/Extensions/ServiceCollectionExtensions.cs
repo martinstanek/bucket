@@ -5,12 +5,12 @@ namespace Bucket.Service.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddKompozer(this IServiceCollection services)
+    public static IServiceCollection AddBucket(this IServiceCollection services)
     {
         return services
             .AddSingleton<DockerService>()
             .AddSingleton<BundleService>()
             .AddSingleton<FileSystemService>()
-            .AddHostedService<KompozerWorker>();
+            .AddHostedService<BucketWorker>();
     }
 }
