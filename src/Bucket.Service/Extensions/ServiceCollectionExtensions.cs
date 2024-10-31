@@ -14,8 +14,8 @@ public static class ServiceCollectionExtensions
             .AddArgument("u", "update", "Update given bundle")
             .AddArgument("s", "start", "Start given bundle")
             .AddArgument("t", "stop", "Stops given bundle")
-            .AddArgument("m", "manifest", "Path to the manifest file")
-            .AddArgument("o", "output", "Path to the output file");
+            .AddArgument("m", "manifest", "Path to the manifest file", mustHaveValue: true)
+            .AddArgument("o", "output", "Path to the output file", mustHaveValue: true);
         
         return services
             .AddSingleton(arguments)
