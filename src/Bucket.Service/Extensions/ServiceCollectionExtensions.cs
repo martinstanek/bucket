@@ -12,7 +12,6 @@ public static class ServiceCollectionExtensions
             .AddArgument("h", "help", "Show this help")
             .AddArgument("b", "bundle", "Bundle given manifest")
             .AddArgument("i", "install", "Install given bundle")
-            .AddArgument("u", "update", "Update given bundle")
             .AddArgument("s", "start", "Start given bundle")
             .AddArgument("t", "stop", "Stops given bundle")
             .AddArgument("m", "manifest", "Path to the manifest file", mustHaveValue: true)

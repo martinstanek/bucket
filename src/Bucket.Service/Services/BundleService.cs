@@ -22,7 +22,43 @@ public sealed class BundleService
         _fileSystemService = fileSystemService;
     }
 
-    public bool TryFindBundleManifest(out BundleManifest? definition, out string definitionPath)
+    public async Task BundleAsync(string inputManifest, string outputPath)
+    {
+        if (!await IsDockerRunningAsync())
+        {
+            return;
+        }
+        
+        if (!TryFindBundleManifest(out var manifest, out var manifestPath) || manifest is null)
+        {
+            Console.WriteLine("No bundle manifest has been found.");
+            
+            return;
+        }
+
+        Console.WriteLine(manifest.Info);
+
+        await CreateBundleAsync(manifest, manifestPath, AppContext.BaseDirectory);
+
+        Console.WriteLine("Done");
+    }
+
+    public Task InstallAsync(string bundlePath)
+    {
+        return Task.CompletedTask;
+    }
+
+    public Task StopAsync(string manifestPath)
+    {
+        return Task.CompletedTask;
+    }
+
+    public Task StartAsync(string manifestPath)
+    {
+        return Task.CompletedTask;
+    }
+
+    private bool TryFindBundleManifest(out BundleManifest? definition, out string definitionPath)
     {
         definition = default;
         definitionPath = string.Empty;
@@ -44,7 +80,7 @@ public sealed class BundleService
         return false;
     }
 
-    public async Task<bool> IsDockerRunningAsync()
+    private async Task<bool> IsDockerRunningAsync()
     {
         try
         {
@@ -62,7 +98,7 @@ public sealed class BundleService
         return false;
     }
 
-    public async Task CreateBundleAsync(BundleManifest bundleManifest, string manifestPath, string workDir)
+    private async Task CreateBundleAsync(BundleManifest bundleManifest, string manifestPath, string workDir)
     {
         Guard.Against.NullOrWhiteSpace(workDir);
         Guard.Against.NullOrWhiteSpace(manifestPath);

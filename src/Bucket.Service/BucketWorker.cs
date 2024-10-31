@@ -30,31 +30,48 @@ public sealed class BucketWorker : BackgroundService
             
             return;
         }
-        
-        if (!await _bundleService.IsDockerRunningAsync())
-        {
-            _lifetime.StopApplication();
-            
-            return;
-        }
-        
-        
 
-        if (!_bundleService.TryFindBundleManifest(out var manifest, out var manifestPath) || manifest is null)
+        var argumentsValidation = new ArgumentsValidation(_arguments.GetOptions());
+
+        if (argumentsValidation.IsBundleCommand(out var bundleManifestPath, out var bundleOutputPath))
         {
-            Console.WriteLine("No bundle manifest has been found.");
+            await _bundleService.BundleAsync(bundleManifestPath, bundleOutputPath);
             
             _lifetime.StopApplication();
             
             return;
         }
 
-        Console.WriteLine(manifest.Info);
+        if (argumentsValidation.IsInstallCommand(out var installBundlePath))
+        {
+            await _bundleService.InstallAsync(installBundlePath);
+            
+            _lifetime.StopApplication();
+            
+            return;
+        }
 
-        await _bundleService.CreateBundleAsync(manifest, manifestPath, AppContext.BaseDirectory);
+        if (argumentsValidation.IsStartCommand(out var startManifestPath))
+        {
+            await _bundleService.StartAsync(startManifestPath);
+            
+            _lifetime.StopApplication();
+            
+            return;
+        }
 
-        Console.WriteLine("Done");
-
+        if (argumentsValidation.IsStopCommand(out var stopManifestPath))
+        {
+            await _bundleService.StopAsync(stopManifestPath);
+            
+            _lifetime.StopApplication();
+            
+            return;
+        }
+        
+        Console.WriteLine("Arguments are invalid, please provide valid arguments.");
+        Console.WriteLine(_arguments.GetHelp());
+            
         _lifetime.StopApplication();
     }
 }
