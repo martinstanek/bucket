@@ -22,9 +22,14 @@ public sealed class BucketWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var help = _arguments.GetHelp();
-        
-        Console.WriteLine(help);
+        if (!_arguments.IsValid || _arguments.IsHelp)
+        {
+            Console.WriteLine(_arguments.GetHelp());
+            
+            _lifetime.StopApplication();
+            
+            return;
+        }
         
         if (!await _bundleService.IsDockerRunningAsync())
         {
@@ -32,6 +37,8 @@ public sealed class BucketWorker : BackgroundService
             
             return;
         }
+        
+        
 
         if (!_bundleService.TryFindBundleManifest(out var manifest, out var manifestPath) || manifest is null)
         {

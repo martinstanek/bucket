@@ -8,9 +8,9 @@ namespace Bucket.Service.Options;
 
 public sealed class Arguments
 {
-    private readonly List<Argument> _arguments = new();
+    private readonly List<Argument> _arguments = [];
+    private readonly List<Argument> _options = [];
     private readonly LinkedList<string> _args;
-    private List<Argument> _options = new();
     private bool _isValid;
     
     public Arguments(string args)
@@ -58,25 +58,27 @@ public sealed class Arguments
         
         for (var argNode = _args.First; argNode is not null; argNode = argNode.Next)
         {
-            if (IsOption(argNode.Value, out var option) && option is not null)
+            if (!IsOption(argNode.Value, out var option) || option is null)
             {
-                if (option.MustHaveValue && argNode.Next is not null && IsValue(argNode.Next.Value))
-                {
-                    _options.Add(option with { Value = argNode.Next.Value });
-
-                    continue;
-                }
-                
-                if (option.MustHaveValue && (argNode.Next is null || !IsValue(argNode.Next.Value)))
-                {
-                    _isValid = false;
-                    _options.Clear();
-                    
-                    return Array.Empty<Argument>();
-                }
-                
-                _options.Add(option);
+                continue;
             }
+            
+            if (option.MustHaveValue && argNode.Next is not null && IsValue(argNode.Next.Value))
+            {
+                _options.Add(option with { Value = argNode.Next.Value });
+
+                continue;
+            }
+                
+            if (option.MustHaveValue && (argNode.Next is null || !IsValue(argNode.Next.Value)))
+            {
+                _isValid = false;
+                _options.Clear();
+                    
+                return Array.Empty<Argument>();
+            }
+                
+            _options.Add(option);
         }
         
         _isValid = _options.Any();
@@ -97,9 +99,11 @@ public sealed class Arguments
     {  
         var sb = new StringBuilder();
 
+        sb.AppendLine("Arguments:");
+        
         foreach (var argument in _arguments)
         {
-            sb.AppendLine(argument.ToString());
+            sb.AppendLine($"    -{argument.ShortName}, --{argument.FullName} : {argument.Description}");
         }
 
         return sb.ToString();
@@ -108,7 +112,7 @@ public sealed class Arguments
     private bool IsOption(string arg, out Argument? argument)
     {
         var shortNameArgument = _arguments.SingleOrDefault(a => $"-{a.ShortName}".Equals(arg, StringComparison.OrdinalIgnoreCase));
-        var fullNameArgument = _arguments.SingleOrDefault(a => $"-{a.FullName}".Equals(arg, StringComparison.OrdinalIgnoreCase));
+        var fullNameArgument = _arguments.SingleOrDefault(a => $"--{a.FullName}".Equals(arg, StringComparison.OrdinalIgnoreCase));
         
         argument = shortNameArgument ?? fullNameArgument;
 
@@ -121,4 +125,6 @@ public sealed class Arguments
     }
 
     public bool IsValid => _isValid;
+    
+    public bool IsHelp => _options.Any(o => o.FullName.Equals("help", StringComparison.OrdinalIgnoreCase));
 }

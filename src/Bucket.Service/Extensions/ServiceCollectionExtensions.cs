@@ -9,6 +9,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddBucket(this IServiceCollection services, string[] args)
     {
         var arguments = new Arguments(args)
+            .AddArgument("h", "help", "Show this help")
             .AddArgument("b", "bundle", "Bundle given manifest")
             .AddArgument("i", "install", "Install given bundle")
             .AddArgument("u", "update", "Update given bundle")

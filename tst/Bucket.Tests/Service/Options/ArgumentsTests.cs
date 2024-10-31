@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Bucket.Tests.Service.Options;
 
-public class ArgumentsTests
+public sealed class ArgumentsTests
 {
     [Fact]
     public void GetOptions_InputIsValid_ReturnsOptions()
@@ -17,9 +17,80 @@ public class ArgumentsTests
         var value = arguments.GetOptionValue("m");
 
         arguments.IsValid.ShouldBeTrue();
+        arguments.IsHelp.ShouldBeFalse();
         value.ShouldBe("./manifest.json");
         options.ShouldNotBeEmpty();
         options.Count.ShouldBe(2);
+    }
+    
+    [Fact]
+    public void GetOptions_InputIsValid_SingleOption_ReturnsOptions()
+    {
+        var arguments = new Arguments("--help")
+            .AddArgument("h", "help", "Install manifest");
+
+        var options = arguments.GetOptions();
+
+        arguments.IsValid.ShouldBeTrue();
+        arguments.IsHelp.ShouldBeTrue();
+        options.Count().ShouldBe(1);
+    }
+    
+    [Fact]
+    public void GetOptions_InputContainsInValidOption_InvalidOptionIsIgnored()
+    {
+        var arguments = new Arguments("-i -m ./manifest.json -x")
+            .AddArgument("i", "install", "Install manifest")
+            .AddArgument("m", "manifest", "Path to the manifest file", mustHaveValue: true);
+
+        var options = arguments.GetOptions();
+        
+        arguments.IsValid.ShouldBeTrue();
+        options.Count.ShouldBe(2);
+        options.ShouldNotContain(o => o.ShortName.Equals("x"));
+    }
+    
+    [Fact]
+    public void GetOptions_InputIsInValid_ReturnsEmptyArray()
+    {
+        var arguments = new Arguments("./manifest.json")
+            .AddArgument("i", "install", "Install manifest")
+            .AddArgument("m", "manifest", "Path to the manifest file", mustHaveValue: true);
+
+        var options = arguments.GetOptions();
+        var value = arguments.GetOptionValue("m");
+
+        arguments.IsValid.ShouldBeFalse();
+        value.ShouldBeEmpty();
+        options.ShouldBeEmpty();
+    }
+    
+    [Fact]
+    public void GetOptions_InputIsEmpty_ReturnsEmptyArray()
+    {
+        var arguments = new Arguments("")
+            .AddArgument("i", "install", "Install manifest")
+            .AddArgument("m", "manifest", "Path to the manifest file", mustHaveValue: true);
+
+        var options = arguments.GetOptions();
+
+        arguments.IsValid.ShouldBeFalse();
+        options.ShouldBeEmpty();
+    }
+    
+    [Fact]
+    public void GetOptions_InputIsInValid_NoValueProvided_ReturnsEmptyArray()
+    {
+        var arguments = new Arguments("-i -m")
+            .AddArgument("i", "install", "Install manifest")
+            .AddArgument("m", "manifest", "Path to the manifest file", mustHaveValue: true);
+
+        var options = arguments.GetOptions();
+        var value = arguments.GetOptionValue("m");
+
+        arguments.IsValid.ShouldBeFalse();
+        value.ShouldBeEmpty();
+        options.ShouldBeEmpty();
     }
     
     [Fact]
