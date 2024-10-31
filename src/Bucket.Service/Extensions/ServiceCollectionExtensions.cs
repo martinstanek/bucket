@@ -8,10 +8,17 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddBucket(this IServiceCollection services, string[] args)
     {
-        var actions = new Arguments(args);
+        var arguments = new Arguments(args)
+            .AddArgument("b", "bundle", "Bundle given manifest")
+            .AddArgument("i", "install", "Install given bundle")
+            .AddArgument("u", "update", "Update given bundle")
+            .AddArgument("s", "start", "Start given bundle")
+            .AddArgument("t", "stop", "Stops given bundle")
+            .AddArgument("m", "manifest", "Path to the manifest file")
+            .AddArgument("o", "output", "Path to the output file");
         
         return services
-            .AddSingleton(actions)
+            .AddSingleton(arguments)
             .AddSingleton<DockerService>()
             .AddSingleton<BundleService>()
             .AddSingleton<FileSystemService>()
