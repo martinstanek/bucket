@@ -12,12 +12,12 @@ using Bucket.Service.Serialization;
 
 namespace Bucket.Service.Services;
 
-public sealed class BundleService
+public sealed class BundleService : IBundleService
 {
-    private readonly DockerService _dockerService;
-    private readonly FileSystemService _fileSystemService;
+    private readonly IDockerService _dockerService;
+    private readonly IFileSystemService _fileSystemService;
 
-    public BundleService(DockerService dockerService, FileSystemService fileSystemService)
+    public BundleService(IDockerService dockerService, IFileSystemService fileSystemService)
     {
         _dockerService = dockerService;
         _fileSystemService = fileSystemService;

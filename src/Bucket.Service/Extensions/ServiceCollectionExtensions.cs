@@ -1,6 +1,7 @@
 ﻿using Bucket.Service.Options;
 using Bucket.Service.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Bucket.Service.Extensions;
 
@@ -19,9 +20,10 @@ public static class ServiceCollectionExtensions
         
         return services
             .AddSingleton(arguments)
-            .AddSingleton<DockerService>()
-            .AddSingleton<BundleService>()
-            .AddSingleton<FileSystemService>()
-            .AddHostedService<BucketWorker>();
+            .AddSingleton<IDockerService, DockerService>()
+            .AddSingleton<IBundleService, BundleService>()
+            .AddSingleton<IFileSystemService, FileSystemService>()
+            .AddSingleton<BucketWorker>()
+            .AddHostedService(s => s.GetRequiredService<BucketWorker>());
     }
 }

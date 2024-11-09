@@ -5,7 +5,7 @@ using Ardalis.GuardClauses;
 
 namespace Bucket.Service.Services;
 
-public sealed class DockerService
+public sealed class DockerService : IDockerService
 {
     public Task<string> GetVersionAsync()
     {

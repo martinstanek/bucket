@@ -2,7 +2,7 @@
 
 namespace Bucket.Service.Services;
 
-public sealed class FileSystemService
+public sealed class FileSystemService : IFileSystemService
 {
     public void CopyDirectory(string sourceDir, string destinationDir, bool recursive = true)
     {
