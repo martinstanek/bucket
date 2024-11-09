@@ -22,56 +22,24 @@ public sealed class BucketWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        if (!_arguments.IsValid || _arguments.IsHelp)
-        {
-            Console.WriteLine(_arguments.GetHelp());
-            
-            _lifetime.StopApplication();
-            
-            return;
-        }
+        var processorTask = new ArgumentsProcessor(_arguments.GetOptions())
+            .WithInvalidArguments(HandleInvalidArgumentsAsync)
+            .WithBundleCommand((manifestPath, outputPath) => _bundleService.BundleAsync(manifestPath, outputPath, stoppingToken))
+            .WithInstallCommand(bundlePath => _bundleService.InstallAsync(bundlePath, stoppingToken))
+            .WithStartCommand(manifestPath => _bundleService.StartAsync(manifestPath, stoppingToken))
+            .WithStopCommand(manifestPath => _bundleService.StopAsync(manifestPath, stoppingToken))
+            .Build();
 
-        var argumentsValidation = new ArgumentsValidation(_arguments.GetOptions());
+        await processorTask;
 
-        if (argumentsValidation.IsBundleCommand(out var bundleManifestPath, out var bundleOutputPath))
-        {
-            await _bundleService.BundleAsync(bundleManifestPath, bundleOutputPath);
-            
-            _lifetime.StopApplication();
-            
-            return;
-        }
-
-        if (argumentsValidation.IsInstallCommand(out var installBundlePath))
-        {
-            await _bundleService.InstallAsync(installBundlePath);
-            
-            _lifetime.StopApplication();
-            
-            return;
-        }
-
-        if (argumentsValidation.IsStartCommand(out var startManifestPath))
-        {
-            await _bundleService.StartAsync(startManifestPath);
-            
-            _lifetime.StopApplication();
-            
-            return;
-        }
-
-        if (argumentsValidation.IsStopCommand(out var stopManifestPath))
-        {
-            await _bundleService.StopAsync(stopManifestPath);
-            
-            _lifetime.StopApplication();
-            
-            return;
-        }
-        
-        Console.WriteLine("Arguments are invalid, please provide valid arguments.");
-        Console.WriteLine(_arguments.GetHelp());
-            
         _lifetime.StopApplication();
+    }
+
+    private Task HandleInvalidArgumentsAsync(string message)
+    {
+        Console.WriteLine(message);
+        Console.WriteLine(_arguments.GetHelp());
+        
+        return Task.CompletedTask;
     }
 }

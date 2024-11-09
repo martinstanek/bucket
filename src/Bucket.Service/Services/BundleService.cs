@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Ardalis.GuardClauses;
 using Bucket.Service.Model;
@@ -22,7 +23,7 @@ public sealed class BundleService
         _fileSystemService = fileSystemService;
     }
 
-    public async Task BundleAsync(string inputManifest, string outputPath)
+    public async Task BundleAsync(string inputManifest, string outputPath, CancellationToken cancellationToken = default)
     {
         if (!await IsDockerRunningAsync())
         {
@@ -43,17 +44,17 @@ public sealed class BundleService
         Console.WriteLine("Done");
     }
 
-    public Task InstallAsync(string bundlePath)
+    public Task InstallAsync(string bundlePath, CancellationToken cancellationToken = default)
     {
         return Task.CompletedTask;
     }
 
-    public Task StopAsync(string manifestPath)
+    public Task StopAsync(string manifestPath, CancellationToken cancellationToken = default)
     {
         return Task.CompletedTask;
     }
 
-    public Task StartAsync(string manifestPath)
+    public Task StartAsync(string manifestPath, CancellationToken cancellationToken = default)
     {
         return Task.CompletedTask;
     }
