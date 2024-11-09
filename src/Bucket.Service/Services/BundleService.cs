@@ -46,16 +46,21 @@ public sealed class BundleService
 
     public Task InstallAsync(string bundlePath, CancellationToken cancellationToken = default)
     {
+        Console.WriteLine("installing ...");
+        
         return Task.CompletedTask;
     }
 
     public Task StopAsync(string manifestPath, CancellationToken cancellationToken = default)
     {
+        Console.WriteLine("stopping ...");
+        
         return Task.CompletedTask;
     }
 
     public Task StartAsync(string manifestPath, CancellationToken cancellationToken = default)
     {
+        Console.WriteLine("starting ...");
         return Task.CompletedTask;
     }
 
