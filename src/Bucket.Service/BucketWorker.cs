@@ -13,10 +13,7 @@ public sealed class BucketWorker : BackgroundService
     private readonly IBundleService _bundleService;
     private readonly Arguments _arguments;
     
-    public BucketWorker(
-        IHostApplicationLifetime lifetime,
-        IBundleService bundleService, 
-        Arguments arguments)
+    public BucketWorker(IHostApplicationLifetime lifetime, IBundleService bundleService, Arguments arguments)
     {
         _bundleService = bundleService;
         _arguments = arguments;
@@ -25,15 +22,16 @@ public sealed class BucketWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var processorTask = new ArgumentsProcessor(_arguments.GetOptions())
+        var action = new ActionBuilder(_arguments)
             .WithBundleCommand((manifestPath, outputPath) => _bundleService.BundleAsync(manifestPath, outputPath, stoppingToken))
             .WithInstallCommand(bundlePath => _bundleService.InstallAsync(bundlePath, stoppingToken))
+            .WithUninstallCommand(bundlePath => _bundleService.UninstallAsync(bundlePath, stoppingToken))
             .WithStartCommand(manifestPath => _bundleService.StartAsync(manifestPath, stoppingToken))
             .WithStopCommand(manifestPath => _bundleService.StopAsync(manifestPath, stoppingToken))
             .WithInvalidArguments(HandleInvalidArgumentsAsync)
             .Build();
 
-        await processorTask;
+        await action;
 
         _lifetime.StopApplication();
     }

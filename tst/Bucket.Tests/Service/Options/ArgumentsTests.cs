@@ -9,18 +9,17 @@ public sealed class ArgumentsTests
     [Fact]
     public void GetOptions_InputIsValid_ReturnsOptions()
     {
-        var arguments = new Arguments("-i -m ./manifest.json")
-            .AddArgument("i", "install", "Install manifest")
-            .AddArgument("m", "manifest", "Path to the manifest file", mustHaveValue: true);
+        var arguments = new Arguments("-i ./bundle.dap.tar.gz")
+            .AddArgument("i", "install", "Install manifest");
 
         var options = arguments.GetOptions();
-        var value = arguments.GetOptionValue("m");
+        var value = arguments.GetOptionValue("i");
 
         arguments.IsValid.ShouldBeTrue();
         arguments.IsHelp.ShouldBeFalse();
-        value.ShouldBe("./manifest.json");
+        value.ShouldBe("./bundle.dap.tar.gz");
         options.ShouldNotBeEmpty();
-        options.Count.ShouldBe(2);
+        options.Count.ShouldBe(1);
     }
     
     [Fact]
@@ -91,6 +90,17 @@ public sealed class ArgumentsTests
         arguments.IsValid.ShouldBeFalse();
         value.ShouldBeEmpty();
         options.ShouldBeEmpty();
+    }
+    
+    [Fact]
+    public void ContainsOption_InputIsInValid_ReturnsTrue()
+    {
+        var arguments = new Arguments("-i -m ./test.json")
+            .AddArgument("i", "install", "Install manifest")
+            .AddArgument("m", "manifest", "Path to the manifest file", mustHaveValue: true);
+
+        arguments.ContainsOption("i").ShouldBeTrue();
+        arguments.ContainsOption("m").ShouldBeTrue();
     }
     
     [Fact]

@@ -51,6 +51,11 @@ public sealed class BundleService : IBundleService
         return Task.CompletedTask;
     }
 
+    public Task UninstallAsync(string bundlePath, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
     public Task StopAsync(string manifestPath, CancellationToken cancellationToken = default)
     {
         Console.WriteLine("stopping ...");

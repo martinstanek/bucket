@@ -26,17 +26,17 @@ public sealed class Arguments
         _args = new LinkedList<string>(args);
     }
 
-    public Arguments AddArgument(string shortName, string fullName, string description, bool mustHaveValue = false)
+    public Arguments AddArgument(string shortName, string fullName, string description, string note = "", bool mustHaveValue = false)
     {
         Guard.Against.NullOrWhiteSpace(shortName);
         Guard.Against.NullOrWhiteSpace(fullName);
         Guard.Against.NullOrWhiteSpace(description);
         
-        var argument = new Argument(shortName, fullName, description, mustHaveValue);
+        var argument = new Argument(shortName, fullName, description, note, mustHaveValue);
         
         return AddArgument(argument);
     }
-
+    
     public Arguments AddArgument(Argument argument)
     {
         if (_arguments.Any(a =>
@@ -63,19 +63,19 @@ public sealed class Arguments
                 continue;
             }
             
-            if (option.MustHaveValue && argNode.Next is not null && IsValue(argNode.Next.Value))
-            {
-                _options.Add(option with { Value = argNode.Next.Value });
-
-                continue;
-            }
-                
             if (option.MustHaveValue && (argNode.Next is null || !IsValue(argNode.Next.Value)))
             {
                 _isValid = false;
                 _options.Clear();
                     
                 return Array.Empty<Argument>();
+            }
+            
+            if (argNode.Next is not null && IsValue(argNode.Next.Value))
+            {
+                _options.Add(option with { Value = argNode.Next.Value });
+
+                continue;
             }
                 
             _options.Add(option);
@@ -104,9 +104,21 @@ public sealed class Arguments
         foreach (var argument in _arguments)
         {
             sb.AppendLine($"    -{argument.ShortName}, --{argument.FullName} : {argument.Description}");
+            
+            if (!string.IsNullOrEmpty(argument.Note))
+            {
+                sb.AppendLine($"        {argument.Note}");
+            }
         }
 
         return sb.ToString();
+    }
+
+    public bool ContainsOption(string shortName)
+    {
+        Guard.Against.NullOrWhiteSpace(shortName);
+
+        return IsOption($"-{shortName}", out _);
     }
 
     private bool IsOption(string arg, out Argument? argument)
