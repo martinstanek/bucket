@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Bucket.Service.Exceptions;
 using Bucket.Service.Options;
 using Bucket.Service.Services;
 using Microsoft.Extensions.Hosting;
@@ -25,7 +24,7 @@ public sealed class BucketWorker : BackgroundService
     {
         var action = new ActionBuilder(_arguments)
             .WithBundleCommand((manifestPath, outputPath) => _bundleService.BundleAsync(manifestPath, outputPath, stoppingToken))
-            .WithInstallCommand(bundlePath => _bundleService.InstallAsync(bundlePath, stoppingToken))
+            .WithInstallCommand((bundlePath, outputDirectory) => _bundleService.InstallAsync(bundlePath, outputDirectory, stoppingToken))
             .WithUninstallCommand(bundlePath => _bundleService.UninstallAsync(bundlePath, stoppingToken))
             .WithStartCommand(manifestPath => _bundleService.StartAsync(manifestPath, stoppingToken))
             .WithStopCommand(manifestPath => _bundleService.StopAsync(manifestPath, stoppingToken))
@@ -35,10 +34,6 @@ public sealed class BucketWorker : BackgroundService
         try
         {
             await action;
-        }
-        catch (BucketException be)
-        {
-            Console.WriteLine(be.Message);
         }
         catch (Exception e)
         {

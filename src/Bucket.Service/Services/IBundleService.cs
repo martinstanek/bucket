@@ -7,7 +7,7 @@ public interface IBundleService
 {
     Task BundleAsync(string manifestPath, string outputBundlePath, CancellationToken cancellationToken = default);
     
-    Task InstallAsync(string bundlePath, CancellationToken cancellationToken = default);
+    Task InstallAsync(string bundlePath, string outputDirecotry, CancellationToken cancellationToken = default);
     
     Task UninstallAsync(string bundlePath, CancellationToken cancellationToken = default);
     

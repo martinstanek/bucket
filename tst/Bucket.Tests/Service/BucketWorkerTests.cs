@@ -12,10 +12,8 @@ namespace Bucket.Tests.Service;
 public sealed class BucketWorkerTests
 {
     [Theory]
-    [InlineData("-i")]
-    [InlineData("--install")]
-    [InlineData("-i", "./bundle.dap.tar.gz")]
-    [InlineData("--install", "./bundle.dap.tar.gz")]
+    [InlineData("-i", "./bundle.dap.tar.gz", "-o", "./test")]
+    [InlineData("--install", "./bundle.dap.tar.gz", "--output", "./test")]
     public async Task Execute_Install_InstallationExecuted(params string[] args)
     {
         var context = new BucketWorkerTestContext();
@@ -25,8 +23,30 @@ public sealed class BucketWorkerTests
         
         context.HostLifeTime.Verify(v => v.StopApplication(), Times.Once);
         context.BundleService.Verify(v => v.InstallAsync(
-            It.IsAny<string>(), 
+            "./bundle.dap.tar.gz",
+            "./test",
             It.IsAny<CancellationToken>()), Times.Once);
+    }
+    
+    [Theory]
+    [InlineData("-i", "./bundle.dap.tar.gz")]
+    [InlineData("--install", "./bundle.dap.tar.gz")]
+    [InlineData("-i", "-o", "./test")]
+    [InlineData("--install", "--output", "./test")]
+    [InlineData("-i", "./bundle.dap.tar.gz", "-o")]
+    [InlineData("--install", "./bundle.dap.tar.gz", "--output")]
+    public async Task Execute_Install_MissingArguments_InstallationNotExecuted(params string[] args)
+    {
+        var context = new BucketWorkerTestContext();
+        var worker = context.GetBucketWorker(args);
+        
+        await worker.StartAsync(CancellationToken.None);
+        
+        context.HostLifeTime.Verify(v => v.StopApplication(), Times.Once);
+        context.BundleService.Verify(v => v.InstallAsync(
+            It.IsAny<string>(),
+            It.IsAny<string>(),
+            It.IsAny<CancellationToken>()), Times.Never);
     }
     
     [Theory]
@@ -125,7 +145,7 @@ public sealed class BucketWorkerTests
     [InlineData("--start")]
     [InlineData("-S")]
     [InlineData("--Start")]
-    public async Task Execute_Start_BundlePathNotProvided_StartlNotExecuted(params string[] args)
+    public async Task Execute_Start_BundlePathNotProvided_StartNotExecuted(params string[] args)
     {
         var context = new BucketWorkerTestContext();
         var worker = context.GetBucketWorker(args);
@@ -157,7 +177,7 @@ public sealed class BucketWorkerTests
     [Theory]
     [InlineData("-t")]
     [InlineData("--stop")]
-    public async Task Execute_Stop_BundlePathNotProvided_StoplNotExecuted(params string[] args)
+    public async Task Execute_Stop_BundlePathNotProvided_StopNotExecuted(params string[] args)
     {
         var context = new BucketWorkerTestContext();
         var worker = context.GetBucketWorker(args);
@@ -179,7 +199,7 @@ public sealed class BucketWorkerTests
         await worker.StartAsync(CancellationToken.None);
         
         context.HostLifeTime.Verify(v => v.StopApplication(), Times.Once);
-        context.BundleService.Verify(v => v.InstallAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        context.BundleService.Verify(v => v.InstallAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
         context.BundleService.Verify(v => v.StopAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
         context.BundleService.Verify(v => v.StartAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
         context.BundleService.Verify(v => v.BundleAsync(

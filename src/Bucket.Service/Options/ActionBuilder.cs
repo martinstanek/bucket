@@ -34,11 +34,11 @@ public sealed class ActionBuilder
         return this;
     }
 
-    public ActionBuilder WithInstallCommand(Func<string, Task> onInstallCommand)
+    public ActionBuilder WithInstallCommand(Func<string, string, Task> onInstallCommand)
     {
-        if (IsInstallCommand(out var manifestPath))
+        if (IsInstallCommand(out var bundlePath, out var outputDirectory))
         {
-            _taskToProcess = onInstallCommand(manifestPath);
+            _taskToProcess = onInstallCommand(bundlePath, outputDirectory);
         }
 
         return this;
@@ -102,12 +102,18 @@ public sealed class ActionBuilder
         return valid;
     }
     
-    private bool IsInstallCommand(out string bundleFolderPath)
+    private bool IsInstallCommand(out string bundlePath, out string outputDirectory)
     {
-        var valid = _options.Count == 1 && _arguments.ContainsOption("i");
+        var valid = _options.Count == 2 
+                    && _arguments.ContainsOption("i")
+                    && _arguments.ContainsOption("o");
         
-        bundleFolderPath = valid 
+        bundlePath = valid 
             ? _arguments.GetOptionValue("i")
+            : string.Empty;
+        
+        outputDirectory = valid 
+            ? _arguments.GetOptionValue("o")
             : string.Empty;
         
         return valid;

@@ -47,11 +47,29 @@ public sealed class BundleService : IBundleService
         Console.WriteLine("Done");
     }
 
-    public Task InstallAsync(string bundlePath, CancellationToken cancellationToken = default)
+    public async Task InstallAsync(string bundlePath, string outputDirectory, CancellationToken cancellationToken = default)
     {
-        Console.WriteLine("installing ...");
+        Guard.Against.NullOrWhiteSpace(bundlePath);
+        Guard.Against.NullOrWhiteSpace(outputDirectory);
+
+        if (!File.Exists(bundlePath))
+        {
+            Console.WriteLine($"The bundle '{bundlePath}' was not found");
+
+            return;
+        }
+
+        if (!Directory.Exists(outputDirectory))
+        {
+            Directory.CreateDirectory(outputDirectory);
+        }
+
+        if (!await IsDockerRunningAsync())
+        {
+            return;
+        }
         
-        return Task.CompletedTask;
+        await TarFile.ExtractToDirectoryAsync(bundlePath, outputDirectory, overwriteFiles: true, cancellationToken);
     }
 
     public Task UninstallAsync(string bundlePath, CancellationToken cancellationToken = default)
