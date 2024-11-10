@@ -93,7 +93,7 @@ public sealed class ArgumentsTests
     }
     
     [Fact]
-    public void ContainsOption_InputIsInValid_ReturnsTrue()
+    public void ContainsOption_InputIsValid_ReturnsTrue()
     {
         var arguments = new Arguments("-i -m ./test.json")
             .AddArgument("i", "install", "Install manifest")
@@ -101,6 +101,19 @@ public sealed class ArgumentsTests
 
         arguments.ContainsOption("i").ShouldBeTrue();
         arguments.ContainsOption("m").ShouldBeTrue();
+    }
+    
+    [Fact]
+    public void ContainsOption_OptionIsNotPresent_ReturnsFalse()
+    {
+        var arguments = new Arguments("-i -m ./test.json")
+            .AddArgument("i", "install", "Install manifest")
+            .AddArgument("b", "bundle", "Bundle manifest")
+            .AddArgument("m", "manifest", "Path to the manifest file", mustHaveValue: true);
+
+        arguments.ContainsOption("i").ShouldBeTrue();
+        arguments.ContainsOption("m").ShouldBeTrue();
+        arguments.ContainsOption("b").ShouldBeFalse();
     }
     
     [Fact]

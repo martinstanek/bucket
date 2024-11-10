@@ -22,6 +22,10 @@ public sealed class BucketWorkerTests
         await worker.StartAsync(CancellationToken.None);
         
         context.HostLifeTime.Verify(v => v.StopApplication(), Times.Once);
+        context.BundleService.Verify(v => v.BundleAsync(
+            It.IsAny<string>(), 
+            It.IsAny<string>(), 
+            It.IsAny<CancellationToken>()), Times.Never);
         context.BundleService.Verify(v => v.InstallAsync(
             "./bundle.dap.tar.gz",
             "./test",

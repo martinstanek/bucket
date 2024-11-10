@@ -58,7 +58,7 @@ public sealed class Arguments
         
         for (var argNode = _args.First; argNode is not null; argNode = argNode.Next)
         {
-            if (!IsOption(argNode.Value, out var option) || option is null)
+            if (!IsArgument(argNode.Value, out var option) || option is null)
             {
                 continue;
             }
@@ -118,10 +118,12 @@ public sealed class Arguments
     {
         Guard.Against.NullOrWhiteSpace(shortName);
 
+        GetOptions();
+        
         return IsOption($"-{shortName}", out _);
     }
 
-    private bool IsOption(string arg, out Argument? argument)
+    private bool IsArgument(string arg, out Argument? argument)
     {
         var shortNameArgument = _arguments.SingleOrDefault(a => $"-{a.ShortName}".Equals(arg, StringComparison.OrdinalIgnoreCase));
         var fullNameArgument = _arguments.SingleOrDefault(a => $"--{a.FullName}".Equals(arg, StringComparison.OrdinalIgnoreCase));
@@ -130,10 +132,20 @@ public sealed class Arguments
 
         return shortNameArgument is not null || fullNameArgument is not null;
     }
+    
+    private bool IsOption(string arg, out Argument? argument)
+    {
+        var shortNameArgument = _options.SingleOrDefault(a => $"-{a.ShortName}".Equals(arg, StringComparison.OrdinalIgnoreCase));
+        var fullNameArgument = _options.SingleOrDefault(a => $"--{a.FullName}".Equals(arg, StringComparison.OrdinalIgnoreCase));
+        
+        argument = shortNameArgument ?? fullNameArgument;
+
+        return shortNameArgument is not null || fullNameArgument is not null;
+    }
 
     private bool IsValue(string arg)
     {
-        return !string.IsNullOrWhiteSpace(arg) && !IsOption(arg, out _);
+        return !string.IsNullOrWhiteSpace(arg) && !IsArgument(arg, out _);
     }
 
     public bool IsValid => _isValid;

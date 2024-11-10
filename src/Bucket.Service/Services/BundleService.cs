@@ -64,12 +64,14 @@ public sealed class BundleService : IBundleService
             Directory.CreateDirectory(outputDirectory);
         }
 
+        /*
         if (!await IsDockerRunningAsync())
         {
             return;
         }
-        
-        await TarFile.ExtractToDirectoryAsync(bundlePath, outputDirectory, overwriteFiles: true, cancellationToken);
+        */
+
+        await UnpackBundleAsync(bundlePath, outputDirectory, cancellationToken);
     }
 
     public Task UninstallAsync(string bundlePath, CancellationToken cancellationToken = default)
@@ -179,6 +181,24 @@ public sealed class BundleService : IBundleService
         await using var gz = new GZipStream(fs, CompressionMode.Compress, leaveOpen: true);
 
         await TarFile.CreateFromDirectoryAsync(workDir, gz, includeBaseDirectory: false);
+    }
+    
+    public async Task UnpackBundleAsync(string bundlePath, string outputDirectory, CancellationToken cancellationToken)
+    {
+        await using var inputStream = File.OpenRead(bundlePath);
+        await using var memoryStream = new MemoryStream();
+        await using var gzipStream = new GZipStream(inputStream, CompressionMode.Decompress);
+        
+        await gzipStream.CopyToAsync(memoryStream, cancellationToken);
+        
+        memoryStream.Seek(0, SeekOrigin.Begin);
+        
+        await TarFile.ExtractToDirectoryAsync(
+            memoryStream,
+            outputDirectory,
+            overwriteFiles: true,
+            cancellationToken: cancellationToken
+        );
     }
 
     private static (bool Found, BundleManifest Definition, string Path) TryFindBundleManifest(string path, CancellationToken cancellationToken)
