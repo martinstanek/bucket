@@ -123,6 +123,8 @@ public sealed class BucketWorkerTests
     [Theory]
     [InlineData("-s")]
     [InlineData("--start")]
+    [InlineData("-S")]
+    [InlineData("--Start")]
     public async Task Execute_Start_BundlePathNotProvided_StartlNotExecuted(params string[] args)
     {
         var context = new BucketWorkerTestContext();
@@ -135,7 +137,7 @@ public sealed class BucketWorkerTests
             It.IsAny<string>(), 
             It.IsAny<CancellationToken>()), Times.Never);
     }
-
+    
     [Theory]
     [InlineData("-t", "./bundle")]
     [InlineData("--stop", "./bundle")]

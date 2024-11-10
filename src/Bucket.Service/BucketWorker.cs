@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Bucket.Service.Exceptions;
 using Bucket.Service.Options;
 using Bucket.Service.Services;
 using Microsoft.Extensions.Hosting;
@@ -31,8 +32,19 @@ public sealed class BucketWorker : BackgroundService
             .WithInvalidArguments(HandleInvalidArgumentsAsync)
             .Build();
 
-        await action;
-
+        try
+        {
+            await action;
+        }
+        catch (BucketException be)
+        {
+            Console.WriteLine(be.Message);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Unexpected error: {e.Message}");
+        }
+        
         _lifetime.StopApplication();
     }
 

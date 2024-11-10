@@ -1,14 +1,14 @@
 ﻿using System;
-using System.Formats.Tar;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
+using System.Formats.Tar;
+using System.IO.Compression;
 using System.Threading.Tasks;
-using Ardalis.GuardClauses;
 using Bucket.Service.Model;
 using Bucket.Service.Serialization;
+using Ardalis.GuardClauses;
 
 namespace Bucket.Service.Services;
 
@@ -23,23 +23,26 @@ public sealed class BundleService : IBundleService
         _fileSystemService = fileSystemService;
     }
 
-    public async Task BundleAsync(string inputManifest, string outputPath, CancellationToken cancellationToken = default)
+    public async Task BundleAsync(string manifestPath, string outputBundlePath, CancellationToken cancellationToken = default)
     {
         if (!await IsDockerRunningAsync())
         {
             return;
         }
-        
-        if (!TryFindBundleManifest(out var manifest, out var manifestPath) || manifest is null)
+
+        var searchResult = TryFindBundleManifest(manifestPath, cancellationToken);
+
+        if (!searchResult.Found)
         {
-            Console.WriteLine("No bundle manifest has been found.");
-            
+            Console.WriteLine($"Failed to find manifest file");
+
             return;
         }
 
-        Console.WriteLine(manifest.Info);
+        Console.WriteLine("The manifest found and parsed:");
+        Console.WriteLine($"{searchResult.Definition.Info.Name} - {searchResult.Definition.Info.Version}");
 
-        await CreateBundleAsync(manifest, manifestPath, AppContext.BaseDirectory);
+        await CreateBundleAsync(searchResult.Definition, manifestPath, AppContext.BaseDirectory);
 
         Console.WriteLine("Done");
     }
@@ -53,7 +56,9 @@ public sealed class BundleService : IBundleService
 
     public Task UninstallAsync(string bundlePath, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        Console.WriteLine("uninstalling ...");
+        
+        return Task.CompletedTask;
     }
 
     public Task StopAsync(string manifestPath, CancellationToken cancellationToken = default)
@@ -66,29 +71,8 @@ public sealed class BundleService : IBundleService
     public Task StartAsync(string manifestPath, CancellationToken cancellationToken = default)
     {
         Console.WriteLine("starting ...");
+        
         return Task.CompletedTask;
-    }
-
-    private bool TryFindBundleManifest(out BundleManifest? definition, out string definitionPath)
-    {
-        definition = default;
-        definitionPath = string.Empty;
-
-        var workDir = AppContext.BaseDirectory;
-        var files = Directory.GetFiles(workDir).Where(f => f.EndsWith(".json", StringComparison.OrdinalIgnoreCase));
-
-        foreach (var file in files)
-        {
-            if (TryParseBundleManifest(file, out var bundleDefinition) && bundleDefinition is not null)
-            {
-                definition = bundleDefinition;
-                definitionPath = file;
-
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private async Task<bool> IsDockerRunningAsync()
@@ -179,6 +163,38 @@ public sealed class BundleService : IBundleService
         await TarFile.CreateFromDirectoryAsync(workDir, gz, includeBaseDirectory: false);
     }
 
+    private static (bool Found, BundleManifest Definition, string Path) TryFindBundleManifest(string path, CancellationToken cancellationToken)
+    {
+        var result = (found: false, definition: BundleManifest.Empty, path: string.Empty);
+        
+        if (!string.IsNullOrWhiteSpace(path) && !File.Exists(path))
+        {
+            return result;
+        }
+        
+        var workDir = AppContext.BaseDirectory;
+        var files = Directory.GetFiles(workDir).Where(f => f.EndsWith(".json", StringComparison.OrdinalIgnoreCase));
+
+        foreach (var file in files)
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                break;
+            }
+
+            if (TryParseBundleManifest(file, out var bundleDefinition) && bundleDefinition is not null)
+            {
+                result.definition = bundleDefinition;
+                result.path = file;
+                result.found = true;
+                
+                return result;
+            }
+        }
+
+        return result;
+    }
+    
     private static bool TryParseBundleManifest(string manifestPath, out BundleManifest? definition)
     {
         var content = File.ReadAllText(manifestPath);
