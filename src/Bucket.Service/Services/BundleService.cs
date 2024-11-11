@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Formats.Tar;
@@ -30,19 +29,17 @@ public sealed class BundleService : IBundleService
             return;
         }
 
-        var searchResult = TryFindBundleManifest(manifestPath, cancellationToken);
-
-        if (!searchResult.Found)
+        if (!TryParseBundleManifest(manifestPath, out var bundleDefinition) || bundleDefinition is null) 
         {
             Console.WriteLine($"Failed to find manifest file");
-
+            
             return;
         }
-
+    
         Console.WriteLine("The manifest found and parsed:");
-        Console.WriteLine($"{searchResult.Definition.Info.Name} - {searchResult.Definition.Info.Version}");
+        Console.WriteLine($"{bundleDefinition.Info.Name} - {bundleDefinition.Info.Version}");
 
-        await CreateBundleAsync(searchResult.Definition, manifestPath, AppContext.BaseDirectory, cancellationToken);
+        await CreateBundleAsync(bundleDefinition, manifestPath, AppContext.BaseDirectory, cancellationToken);
 
         Console.WriteLine("Done");
     }
@@ -237,32 +234,6 @@ public sealed class BundleService : IBundleService
         );
     }
 
-    private static (bool Found, BundleManifest Definition, string Path) TryFindBundleManifest(string path, CancellationToken cancellationToken)
-    {
-        var result = (found: false, definition: BundleManifest.Empty, path: string.Empty);
-        var workDir = string.IsNullOrEmpty(path) ? AppContext.BaseDirectory : path;
-        var files = Directory.GetFiles(workDir).Where(f => f.EndsWith(".json", StringComparison.OrdinalIgnoreCase));
-
-        foreach (var file in files)
-        {
-            if (cancellationToken.IsCancellationRequested)
-            {
-                break;
-            }
-
-            if (TryParseBundleManifest(file, out var bundleDefinition) && bundleDefinition is not null)
-            {
-                result.definition = bundleDefinition;
-                result.path = file;
-                result.found = true;
-                
-                return result;
-            }
-        }
-
-        return result;
-    }
-    
     private static bool TryParseBundleManifest(string manifestPath, out BundleManifest? definition)
     {
         var content = File.ReadAllText(manifestPath);
