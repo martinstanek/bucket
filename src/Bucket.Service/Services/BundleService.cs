@@ -193,7 +193,8 @@ public sealed class BundleService : IBundleService
         
         foreach (var stack in bundleManifest.Stacks)
         {
-            var path = Path.Combine(directory, "_stacks", stack, "docker-compose.yml");
+            var stackFolder = stack.Trim('.').Trim('/');
+            var path = Path.Combine(directory, "_stacks", stackFolder, "docker-compose.yml");
 
             if (File.Exists(path))
             {
