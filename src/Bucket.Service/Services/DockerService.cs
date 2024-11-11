@@ -41,8 +41,7 @@ public sealed class DockerService : IDockerService
         }
 
         var id = await RunDockerProcessAsync($"image import {inputFile}");
-        // await RunDockerProcessAsync($"tag {id} {fullImageName}");
-        Console.WriteLine(id);
+        await RunDockerProcessAsync($"tag {id} {fullImageName}");
     }
 
     private static Task<string> RunDockerProcessAsync(string arguments)

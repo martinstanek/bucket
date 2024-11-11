@@ -42,7 +42,7 @@ public sealed class BundleService : IBundleService
         Console.WriteLine("The manifest found and parsed:");
         Console.WriteLine($"{searchResult.Definition.Info.Name} - {searchResult.Definition.Info.Version}");
 
-        await CreateBundleAsync(searchResult.Definition, manifestPath, AppContext.BaseDirectory);
+        await CreateBundleAsync(searchResult.Definition, manifestPath, AppContext.BaseDirectory, cancellationToken);
 
         Console.WriteLine("Done");
     }
@@ -122,7 +122,7 @@ public sealed class BundleService : IBundleService
         return false;
     }
 
-    private async Task CreateBundleAsync(BundleManifest bundleManifest, string manifestPath, string workDir)
+    private async Task CreateBundleAsync(BundleManifest bundleManifest, string manifestPath, string workDir, CancellationToken cancellationToken)
     {
         Guard.Against.NullOrWhiteSpace(workDir);
         Guard.Against.NullOrWhiteSpace(manifestPath);
@@ -141,7 +141,7 @@ public sealed class BundleService : IBundleService
 
         Directory.CreateDirectory(bundleDirectory);
 
-        await ExportImagesAsync(bundleManifest, bundleDirectory);
+        await ExportImagesAsync(bundleManifest, bundleDirectory, cancellationToken);
 
         CopyContent(bundleManifest, bundleDirectory, manifestPath);
 
@@ -150,7 +150,7 @@ public sealed class BundleService : IBundleService
         CleanUp(bundleDirectory);
     }
 
-    private async Task ExportImagesAsync(BundleManifest bundleDefinition, string workDir)
+    private async Task ExportImagesAsync(BundleManifest bundleDefinition, string workDir, CancellationToken cancellationToken)
     {
         if (!bundleDefinition.Configuration.FetchImages)
         {
@@ -169,7 +169,7 @@ public sealed class BundleService : IBundleService
         Directory.CreateDirectory(exportDirectory);
         Console.WriteLine($"Exporting images into: {exportDirectory}");
 
-        foreach (var image in bundleDefinition.Images)
+        await Parallel.ForEachAsync(bundleDefinition.Images, cancellationToken, async (image, _) =>
         {
             var imageName = $"{image.Alias}.tar";
             var fullPath = Path.Combine(exportDirectory, imageName);
@@ -177,12 +177,12 @@ public sealed class BundleService : IBundleService
             await _dockerService.ExportImageAsync(image.FullName, fullPath);
 
             Console.WriteLine(imageName);
-        }
+        });
     }
 
     private async Task InstallBundleAsync(BundleManifest bundleManifest, string directory, CancellationToken cancellationToken)
     {
-        foreach (var image in bundleManifest.Images)
+        await Parallel.ForEachAsync(bundleManifest.Images, cancellationToken, async (image, token) =>
         {
             var path = Path.Combine(directory, "_export", $"{image.Alias}.tar");
 
@@ -192,7 +192,7 @@ public sealed class BundleService : IBundleService
 
                 await _dockerService.ImportImageAsync(image.FullName, path);
             }
-        }
+        });
         
         foreach (var stack in bundleManifest.Stacks)
         {
