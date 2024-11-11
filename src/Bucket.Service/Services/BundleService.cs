@@ -217,17 +217,19 @@ public sealed class BundleService : IBundleService
     private static async Task UnpackBundleAsync(string bundlePath, string outputDirectory, CancellationToken cancellationToken)
     {
         Console.WriteLine("Unpacking bundle ...");
+
+        var tempFile = Path.Combine(outputDirectory, Guid.NewGuid().ToString());
         
         await using var inputStream = File.OpenRead(bundlePath);
-        await using var memoryStream = new MemoryStream();
+        await using var outputFileStream = File.Create(tempFile);
         await using var gzipStream = new GZipStream(inputStream, CompressionMode.Decompress);
         
-        await gzipStream.CopyToAsync(memoryStream, cancellationToken);
+        await gzipStream.CopyToAsync(outputFileStream, cancellationToken);
         
-        memoryStream.Seek(0, SeekOrigin.Begin);
+        outputFileStream.Seek(0, SeekOrigin.Begin);
         
         await TarFile.ExtractToDirectoryAsync(
-            memoryStream,
+            outputFileStream,
             outputDirectory,
             overwriteFiles: true,
             cancellationToken: cancellationToken
