@@ -7,7 +7,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace Bucket.Service;
 
-public sealed class BucketWorker : BackgroundService
+public sealed class BucketWorker : IHostedService
 {
     private readonly IHostApplicationLifetime _lifetime;
     private readonly IBundleService _bundleService;
@@ -20,7 +20,7 @@ public sealed class BucketWorker : BackgroundService
         _lifetime = lifetime;
     }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    public async Task StartAsync(CancellationToken stoppingToken)
     {
         var action = new ActionBuilder(_arguments)
             .WithBundleCommand((manifestPath, outputPath) => _bundleService.BundleAsync(manifestPath, outputPath, stoppingToken))
@@ -28,12 +28,13 @@ public sealed class BucketWorker : BackgroundService
             .WithUninstallCommand(bundlePath => _bundleService.UninstallAsync(bundlePath, stoppingToken))
             .WithStartCommand(manifestPath => _bundleService.StartAsync(manifestPath, stoppingToken))
             .WithStopCommand(manifestPath => _bundleService.StopAsync(manifestPath, stoppingToken))
+            .WithHelpCommand(HandleHelpAsync)
             .WithInvalidArguments(HandleInvalidArgumentsAsync)
             .Build();
-
+        
         try
         {
-            await action;
+            await action();
         }
         catch (Exception e)
         {
@@ -43,11 +44,27 @@ public sealed class BucketWorker : BackgroundService
         _lifetime.StopApplication();
     }
 
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        _lifetime.StopApplication();
+
+        return Task.CompletedTask;
+    }
+    
     private Task HandleInvalidArgumentsAsync(string message)
     {
-        Console.WriteLine(message);
-        Console.WriteLine(_arguments.GetHelp());
-        
-        return Task.CompletedTask;
+        return Task.Run(() =>
+        {
+            Console.WriteLine(message);
+            Console.WriteLine(_arguments.GetHelp());    
+        });
+    }
+    
+    private Task HandleHelpAsync()
+    {
+        return Task.Run(() =>
+        {
+            Console.WriteLine(_arguments.GetHelp());    
+        });
     }
 }

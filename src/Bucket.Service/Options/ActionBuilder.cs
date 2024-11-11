@@ -8,8 +8,8 @@ public sealed class ActionBuilder
 {
     private readonly Arguments _arguments;
     private readonly IReadOnlyCollection<Argument> _options;
-    private Task _invalidArgumentsTask = Task.CompletedTask;
-    private Task? _taskToProcess;
+    private Func<Task>? _taskToProcess;
+    private Func<Task>? _fallBack;
 
     public ActionBuilder(Arguments arguments)
     {
@@ -19,7 +19,7 @@ public sealed class ActionBuilder
 
     public ActionBuilder WithInvalidArguments(Func<string, Task> onInvalidArguments)
     {
-        _invalidArgumentsTask = onInvalidArguments("Invalid arguments");
+        _fallBack = () => onInvalidArguments("Invalid arguments");
         
         return this;
     }
@@ -28,7 +28,7 @@ public sealed class ActionBuilder
     {
         if (IsBundleCommand(out var manifestPath, out var outputBundlePath))
         {
-            _taskToProcess = onBundleCommand(manifestPath, outputBundlePath);
+            _taskToProcess = () => onBundleCommand(manifestPath, outputBundlePath);
         }
 
         return this;
@@ -38,7 +38,7 @@ public sealed class ActionBuilder
     {
         if (IsInstallCommand(out var bundlePath, out var outputDirectory))
         {
-            _taskToProcess = onInstallCommand(bundlePath, outputDirectory);
+            _taskToProcess = () => onInstallCommand(bundlePath, outputDirectory);
         }
 
         return this;
@@ -48,7 +48,7 @@ public sealed class ActionBuilder
     {
         if (IsUninstallCommand(out var bundleFolderPath))
         {
-            _taskToProcess = onUninstallCommand(bundleFolderPath);
+            _taskToProcess = () => onUninstallCommand(bundleFolderPath);
         }
 
         return this;
@@ -58,7 +58,7 @@ public sealed class ActionBuilder
     {
         if (IsStopCommand(out var manifestPath))
         {
-            _taskToProcess = onStopCommand(manifestPath);
+            _taskToProcess = () => onStopCommand(manifestPath);
         }
 
         return this;
@@ -68,15 +68,27 @@ public sealed class ActionBuilder
     {
         if (IsStartCommand(out var bundleFolderPath))
         {
-            _taskToProcess = onStartCommand(bundleFolderPath);
+            _taskToProcess = () => onStartCommand(bundleFolderPath);
         }
 
         return this;
     }
 
-    public Task Build()
+    public ActionBuilder WithHelpCommand(Func<Task> onHelpCommand)
     {
-        return _taskToProcess ?? _invalidArgumentsTask;
+        if (IsHelpCommand())
+        {
+            _taskToProcess = onHelpCommand;
+        }
+
+        return this;
+    }
+
+    public Func<Task> Build()
+    {
+        return _taskToProcess 
+               ?? _fallBack 
+               ?? (() => Task.CompletedTask);
     }
 
     private bool IsBundleCommand(out string manifestPath, out string outputBundlePath)
@@ -133,7 +145,12 @@ public sealed class ActionBuilder
     {
         return IsSingleOptionCommandWithValue("s", out bundleFolderPath);
     }
-    
+
+    private bool IsHelpCommand()
+    {
+        return _options.Count == 1 && _arguments.ContainsOption("h");
+    }
+
     private bool IsSingleOptionCommandWithValue(string option, out string bundleFolderPath)
     {
         var valid = _options.Count == 1
