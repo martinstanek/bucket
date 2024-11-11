@@ -44,6 +44,18 @@ public sealed class DockerService : IDockerService
         await RunDockerProcessAsync($"tag {id} {fullImageName}");
     }
 
+    public async Task UpStackAsync(string composeFilePath)
+    {
+        Guard.Against.NullOrWhiteSpace(composeFilePath);
+        
+        if (!File.Exists(composeFilePath))
+        {
+            return;
+        }
+        
+        await RunDockerProcessAsync($"compose -f \"{composeFilePath}\" up -d --build");
+    }
+
     private static Task<string> RunDockerProcessAsync(string arguments)
     {
         return RunProcessAsync("docker", arguments);

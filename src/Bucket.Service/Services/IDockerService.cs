@@ -11,4 +11,6 @@ public interface IDockerService
     Task ExportImageAsync(string fullImageName, string outputFile);
     
     Task ImportImageAsync(string fullImageName, string inputFile);
+
+    Task UpStackAsync(string composeFilePath);
 }

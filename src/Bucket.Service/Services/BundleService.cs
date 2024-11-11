@@ -197,7 +197,7 @@ public sealed class BundleService : IBundleService
 
             if (File.Exists(path))
             {
-                Console.WriteLine($"Docker up: {path}");
+                await _dockerService.UpStackAsync(path);
             }
         }
     }
