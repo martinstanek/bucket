@@ -120,7 +120,7 @@ public sealed class Arguments
 
         GetOptions();
         
-        return IsOption($"-{shortName}", out _);
+        return IsOption($"-{shortName}");
     }
 
     private bool IsArgument(string arg, out Argument? argument)
@@ -133,13 +133,11 @@ public sealed class Arguments
         return shortNameArgument is not null || fullNameArgument is not null;
     }
     
-    private bool IsOption(string arg, out Argument? argument)
+    private bool IsOption(string arg)
     {
         var shortNameArgument = _options.SingleOrDefault(a => $"-{a.ShortName}".Equals(arg, StringComparison.OrdinalIgnoreCase));
         var fullNameArgument = _options.SingleOrDefault(a => $"--{a.FullName}".Equals(arg, StringComparison.OrdinalIgnoreCase));
         
-        argument = shortNameArgument ?? fullNameArgument;
-
         return shortNameArgument is not null || fullNameArgument is not null;
     }
 

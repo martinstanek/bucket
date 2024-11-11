@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Formats.Tar;
 using System.IO.Compression;
+using System.Net;
 using System.Threading.Tasks;
 using Bucket.Service.Model;
 using Bucket.Service.Serialization;
@@ -52,6 +53,13 @@ public sealed class BundleService : IBundleService
         Guard.Against.NullOrWhiteSpace(bundlePath);
         Guard.Against.NullOrWhiteSpace(outputDirectory);
 
+        /*
+        if (!await IsDockerRunningAsync())
+        {
+            return;
+        }
+        */
+        
         if (!File.Exists(bundlePath))
         {
             Console.WriteLine($"The bundle '{bundlePath}' was not found");
@@ -63,15 +71,19 @@ public sealed class BundleService : IBundleService
         {
             Directory.CreateDirectory(outputDirectory);
         }
+        
+        await UnpackBundleAsync(bundlePath, outputDirectory, cancellationToken);
 
-        /*
-        if (!await IsDockerRunningAsync())
+        var manifestPath = Path.Combine(outputDirectory, "manifest.json");
+
+        if (TryParseBundleManifest(manifestPath, out var bundleManifest) && bundleManifest is not null)
         {
+            await InstallBundleAsync(bundleManifest, outputDirectory, cancellationToken);
+            
             return;
         }
-        */
-
-        await UnpackBundleAsync(bundlePath, outputDirectory, cancellationToken);
+        
+        Console.WriteLine("Invalid bundle");
     }
 
     public Task UninstallAsync(string bundlePath, CancellationToken cancellationToken = default)
@@ -171,6 +183,31 @@ public sealed class BundleService : IBundleService
         }
     }
 
+    private Task InstallBundleAsync(BundleManifest bundleManifest, string directory, CancellationToken cancellationToken)
+    {
+        foreach (var image in bundleManifest.Images)
+        {
+            var path = Path.Combine(directory, "_export", $"{image.Alias}.tar");
+
+            if (File.Exists(path))
+            {
+                Console.WriteLine($"Importing: {path}");
+            }
+        }
+        
+        foreach (var stack in bundleManifest.Stacks)
+        {
+            var path = Path.Combine(directory, "_stacks", stack, "docker-compose.yml");
+
+            if (File.Exists(path))
+            {
+                Console.WriteLine($"Docker up: {path}");
+            }
+        }
+
+        return Task.CompletedTask;
+    }
+
     private static async Task PackBundleAsync(BundleManifest bundleDefinition, string workDir)
     {
         Console.WriteLine("Packing bundle ...");
@@ -182,9 +219,11 @@ public sealed class BundleService : IBundleService
 
         await TarFile.CreateFromDirectoryAsync(workDir, gz, includeBaseDirectory: false);
     }
-    
-    public async Task UnpackBundleAsync(string bundlePath, string outputDirectory, CancellationToken cancellationToken)
+
+    private static async Task UnpackBundleAsync(string bundlePath, string outputDirectory, CancellationToken cancellationToken)
     {
+        Console.WriteLine("Unpacking bundle ...");
+        
         await using var inputStream = File.OpenRead(bundlePath);
         await using var memoryStream = new MemoryStream();
         await using var gzipStream = new GZipStream(inputStream, CompressionMode.Decompress);
@@ -204,13 +243,7 @@ public sealed class BundleService : IBundleService
     private static (bool Found, BundleManifest Definition, string Path) TryFindBundleManifest(string path, CancellationToken cancellationToken)
     {
         var result = (found: false, definition: BundleManifest.Empty, path: string.Empty);
-        
-        if (!string.IsNullOrWhiteSpace(path) && !File.Exists(path))
-        {
-            return result;
-        }
-        
-        var workDir = AppContext.BaseDirectory;
+        var workDir = string.IsNullOrEmpty(path) ? AppContext.BaseDirectory : path;
         var files = Directory.GetFiles(workDir).Where(f => f.EndsWith(".json", StringComparison.OrdinalIgnoreCase));
 
         foreach (var file in files)

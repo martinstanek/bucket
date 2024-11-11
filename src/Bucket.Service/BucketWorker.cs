@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Bucket.Service.Options;
@@ -63,7 +64,8 @@ public sealed class BucketWorker : IHostedService
     private Task HandleHelpAsync()
     {
         return Task.Run(() =>
-        {
+        { 
+            Console.WriteLine($"bucket by martinstanek {Assembly.GetEntryAssembly()?.GetName().Version}");
             Console.WriteLine(_arguments.GetHelp());    
         });
     }
