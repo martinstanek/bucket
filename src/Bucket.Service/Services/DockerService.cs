@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Threading.Tasks;
 using Ardalis.GuardClauses;
 
@@ -27,6 +28,19 @@ public sealed class DockerService : IDockerService
         var id = await RunDockerProcessAsync($"create {fullImageName}");
         await RunDockerProcessAsync($"export {id} -o {outputFile}");
         await RunDockerProcessAsync($"container rm {id}");
+    }
+
+    public Task ImportImageAsync(string fullImageName, string inputFile)
+    {
+        Guard.Against.NullOrWhiteSpace(fullImageName);
+        Guard.Against.NullOrWhiteSpace(inputFile);
+
+        if (!File.Exists(inputFile))
+        {
+            return Task.CompletedTask;
+        }
+
+        return RunDockerProcessAsync($"image import {inputFile} -{fullImageName}");
     }
 
     private static Task<string> RunDockerProcessAsync(string arguments)

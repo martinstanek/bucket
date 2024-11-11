@@ -5,7 +5,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Formats.Tar;
 using System.IO.Compression;
-using System.Net;
 using System.Threading.Tasks;
 using Bucket.Service.Model;
 using Bucket.Service.Serialization;
@@ -53,12 +52,10 @@ public sealed class BundleService : IBundleService
         Guard.Against.NullOrWhiteSpace(bundlePath);
         Guard.Against.NullOrWhiteSpace(outputDirectory);
 
-        /*
         if (!await IsDockerRunningAsync())
         {
             return;
         }
-        */
         
         if (!File.Exists(bundlePath))
         {
@@ -183,7 +180,7 @@ public sealed class BundleService : IBundleService
         }
     }
 
-    private Task InstallBundleAsync(BundleManifest bundleManifest, string directory, CancellationToken cancellationToken)
+    private async Task InstallBundleAsync(BundleManifest bundleManifest, string directory, CancellationToken cancellationToken)
     {
         foreach (var image in bundleManifest.Images)
         {
@@ -192,6 +189,8 @@ public sealed class BundleService : IBundleService
             if (File.Exists(path))
             {
                 Console.WriteLine($"Importing: {path}");
+
+                await _dockerService.ImportImageAsync(image.FullName, path);
             }
         }
         
@@ -204,8 +203,6 @@ public sealed class BundleService : IBundleService
                 Console.WriteLine($"Docker up: {path}");
             }
         }
-
-        return Task.CompletedTask;
     }
 
     private static async Task PackBundleAsync(BundleManifest bundleDefinition, string workDir)
