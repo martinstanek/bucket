@@ -30,17 +30,19 @@ public sealed class DockerService : IDockerService
         await RunDockerProcessAsync($"container rm {id}");
     }
 
-    public Task ImportImageAsync(string fullImageName, string inputFile)
+    public async Task ImportImageAsync(string fullImageName, string inputFile)
     {
         Guard.Against.NullOrWhiteSpace(fullImageName);
         Guard.Against.NullOrWhiteSpace(inputFile);
 
         if (!File.Exists(inputFile))
         {
-            return Task.CompletedTask;
+            return;
         }
 
-        return RunDockerProcessAsync($"image import {inputFile} -{fullImageName}");
+        var id = await RunDockerProcessAsync($"image import {inputFile}");
+        // await RunDockerProcessAsync($"tag {id} {fullImageName}");
+        Console.WriteLine(id);
     }
 
     private static Task<string> RunDockerProcessAsync(string arguments)
