@@ -8,6 +8,20 @@ namespace Bucket.Service.Services;
 
 public sealed class DockerService : IDockerService
 {
+    public async Task<bool> IsDockerRunningAsync()
+    {
+        try
+        {
+            var version = await GetVersionAsync();
+
+            return !string.IsNullOrWhiteSpace(version);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     public Task<string> GetVersionAsync()
     {
         return RunDockerProcessAsync("--version");
@@ -63,8 +77,7 @@ public sealed class DockerService : IDockerService
 
         await RunDockerProcessAsync($"load -i {inputFile}");
     }
-
-
+    
     public async Task UpStackAsync(string composeFilePath)
     {
         Guard.Against.NullOrWhiteSpace(composeFilePath);

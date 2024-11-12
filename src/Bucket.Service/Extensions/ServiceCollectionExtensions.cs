@@ -22,6 +22,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IDockerService, DockerService>()
             .AddSingleton<IBundleService, BundleService>()
             .AddSingleton<IFileSystemService, FileSystemService>()
+            .AddSingleton<ICompressorService, CompressorService>()
             .AddSingleton<BucketWorker>()
             .AddHostedService(s => s.GetRequiredService<BucketWorker>());
     }

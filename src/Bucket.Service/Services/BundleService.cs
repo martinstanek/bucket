@@ -2,8 +2,6 @@
 using System.IO;
 using System.Text.Json;
 using System.Threading;
-using System.Formats.Tar;
-using System.IO.Compression;
 using System.Threading.Tasks;
 using Bucket.Service.Model;
 using Bucket.Service.Serialization;
@@ -13,18 +11,34 @@ namespace Bucket.Service.Services;
 
 public sealed class BundleService : IBundleService
 {
+    private const string BundleExtension = ".dap.tar.gz";
+    private const string ExportedImageExtension = ".tar";
+    private const string ManifestFile = "manifest.json";
+    private const string ComposeFile = "docker-compose.yml";
+    private const string ExportFolder = "_export";
+    private const string StacksFolder = "_stacks";
+    private const string BundleFolder = "_bundle";
+    
     private readonly IDockerService _dockerService;
     private readonly IFileSystemService _fileSystemService;
+    private readonly ICompressorService _compressorService;
 
-    public BundleService(IDockerService dockerService, IFileSystemService fileSystemService)
+    public BundleService(
+        IDockerService dockerService, 
+        IFileSystemService fileSystemService,
+        ICompressorService compressorService)
     {
         _dockerService = dockerService;
         _fileSystemService = fileSystemService;
+        _compressorService = compressorService;
     }
 
     public async Task BundleAsync(string manifestPath, string outputBundlePath, CancellationToken cancellationToken = default)
     {
-        if (!await IsDockerRunningAsync())
+        Guard.Against.NullOrWhiteSpace(manifestPath);
+        Guard.Against.NullOrWhiteSpace(outputBundlePath);
+        
+        if (!await _dockerService.IsDockerRunningAsync())
         {
             return;
         }
@@ -39,7 +53,7 @@ public sealed class BundleService : IBundleService
         Console.WriteLine("The manifest found and parsed:");
         Console.WriteLine($"{bundleDefinition.Info.Name} - {bundleDefinition.Info.Version}");
 
-        await CreateBundleAsync(bundleDefinition, manifestPath, AppContext.BaseDirectory, cancellationToken);
+        await CreateBundleAsync(bundleDefinition, manifestPath, AppContext.BaseDirectory, outputBundlePath, cancellationToken);
 
         Console.WriteLine("Done");
     }
@@ -49,7 +63,7 @@ public sealed class BundleService : IBundleService
         Guard.Against.NullOrWhiteSpace(bundlePath);
         Guard.Against.NullOrWhiteSpace(outputDirectory);
 
-        if (!await IsDockerRunningAsync())
+        if (!await _dockerService.IsDockerRunningAsync())
         {
             return;
         }
@@ -66,9 +80,9 @@ public sealed class BundleService : IBundleService
             Directory.CreateDirectory(outputDirectory);
         }
         
-        await UnpackBundleAsync(bundlePath, outputDirectory, cancellationToken);
+        await _compressorService.UnpackBundleAsync(bundlePath, outputDirectory, cancellationToken);
 
-        var manifestPath = Path.Combine(outputDirectory, "manifest.json");
+        var manifestPath = Path.Combine(outputDirectory, ManifestFile);
 
         if (TryParseBundleManifest(manifestPath, out var bundleManifest) && bundleManifest is not null)
         {
@@ -101,40 +115,33 @@ public sealed class BundleService : IBundleService
         return Task.CompletedTask;
     }
 
-    private async Task<bool> IsDockerRunningAsync()
+    private async Task CreateBundleAsync(
+        BundleManifest bundleManifest, 
+        string manifestPath, 
+        string workingDirectory,
+        string outputDirectory, 
+        CancellationToken cancellationToken)
     {
-        try
-        {
-            var version = await _dockerService.GetVersionAsync();
-        
-            Console.WriteLine(version);
-
-            return true;
-        }
-        catch
-        {
-            Console.WriteLine("Docker is not running.");
-        }
-
-        return false;
-    }
-
-    private async Task CreateBundleAsync(BundleManifest bundleManifest, string manifestPath, string workDir, CancellationToken cancellationToken)
-    {
-        Guard.Against.NullOrWhiteSpace(workDir);
+        Guard.Against.NullOrWhiteSpace(workingDirectory);
         Guard.Against.NullOrWhiteSpace(manifestPath);
+        Guard.Against.NullOrWhiteSpace(outputDirectory);
 
         if (!File.Exists(manifestPath))
         {
-            throw new InvalidOperationException("Can't find the manifest file");
+            throw new FileNotFoundException(manifestPath);
         }
 
-        if (!Directory.Exists(workDir))
+        if (!Directory.Exists(workingDirectory))
         {
-            throw new InvalidOperationException("Working directory does not exist.");
+            throw new DirectoryNotFoundException(workingDirectory);
+        }
+        
+        if (!Directory.Exists(outputDirectory))
+        {
+            throw new DirectoryNotFoundException(outputDirectory);
         }
 
-        var bundleDirectory = Path.Combine(workDir, "_bundle");
+        var bundleDirectory = Path.Combine(workingDirectory, BundleFolder);
 
         Directory.CreateDirectory(bundleDirectory);
 
@@ -142,9 +149,14 @@ public sealed class BundleService : IBundleService
 
         CopyContent(bundleManifest, bundleDirectory, manifestPath);
 
-        await PackBundleAsync(bundleManifest, bundleDirectory);
+        await _compressorService.PackBundleAsync(
+            bundleManifest, 
+            bundleDirectory, 
+            outputDirectory,  
+            BundleExtension, 
+            cancellationToken);
 
-        CleanUp(bundleDirectory);
+        Directory.Delete(bundleDirectory, recursive: true);
     }
 
     private async Task ExportImagesAsync(BundleManifest bundleDefinition, string workDir, CancellationToken cancellationToken)
@@ -156,14 +168,14 @@ public sealed class BundleService : IBundleService
 
         await PullImagesAsync(bundleDefinition);
 
-        var exportDirectory = Path.Combine(workDir, "_export");
+        var exportDirectory = Path.Combine(workDir, ExportFolder);
 
         Directory.CreateDirectory(exportDirectory);
         Console.WriteLine($"Exporting images into: {exportDirectory}");
 
         await Parallel.ForEachAsync(bundleDefinition.Images, cancellationToken, async (image, _) =>
         {
-            var imageName = $"{image.Alias}.tar";
+            var imageName = $"{image.Alias}{ExportedImageExtension}";
             var fullPath = Path.Combine(exportDirectory, imageName);
 
             await _dockerService.SaveImageAsync(image.FullName, fullPath);
@@ -190,7 +202,7 @@ public sealed class BundleService : IBundleService
     {
         await Parallel.ForEachAsync(bundleManifest.Images, cancellationToken, async (image, token) =>
         {
-            var path = Path.Combine(directory, "_export", $"{image.Alias}.tar");
+            var path = Path.Combine(directory, ExportFolder, $"{image.Alias}{ExportedImageExtension}");
 
             if (File.Exists(path))
             {
@@ -206,7 +218,7 @@ public sealed class BundleService : IBundleService
         foreach (var stack in bundleManifest.Stacks)
         {
             var stackFolder = stack.Trim('.').Trim('/');
-            var path = Path.Combine(directory, "_stacks", stackFolder, "docker-compose.yml");
+            var path = Path.Combine(directory, StacksFolder, stackFolder, ComposeFile);
 
             if (File.Exists(path))
             {
@@ -217,46 +229,10 @@ public sealed class BundleService : IBundleService
 
     private async Task PullImagesAsync(BundleManifest bundleDefinition)
     {
-        Console.WriteLine("Pulling images ...");
-
         foreach (var image in bundleDefinition.Images)
         {
             Console.WriteLine(await _dockerService.PullImageAsync(image.FullName));
         }
-    }
-
-    private static async Task PackBundleAsync(BundleManifest bundleDefinition, string workDir)
-    {
-        Console.WriteLine("Packing bundle ...");
-
-        var bundleName = $"./{bundleDefinition.Info.Name}.dap.tar.gz";
-        
-        await using var fs = new FileStream(bundleName, FileMode.CreateNew, FileAccess.Write);
-        await using var gz = new GZipStream(fs, CompressionMode.Compress, leaveOpen: true);
-
-        await TarFile.CreateFromDirectoryAsync(workDir, gz, includeBaseDirectory: false);
-    }
-
-    private static async Task UnpackBundleAsync(string bundlePath, string outputDirectory, CancellationToken cancellationToken)
-    {
-        Console.WriteLine("Unpacking bundle ...");
-
-        var tempFile = Path.Combine(outputDirectory, Guid.NewGuid().ToString());
-        
-        await using var inputStream = File.OpenRead(bundlePath);
-        await using var outputFileStream = File.Create(tempFile);
-        await using var gzipStream = new GZipStream(inputStream, CompressionMode.Decompress);
-        
-        await gzipStream.CopyToAsync(outputFileStream, cancellationToken);
-        
-        outputFileStream.Seek(0, SeekOrigin.Begin);
-        
-        await TarFile.ExtractToDirectoryAsync(
-            outputFileStream,
-            outputDirectory,
-            overwriteFiles: true,
-            cancellationToken: cancellationToken
-        );
     }
 
     private static bool TryParseBundleManifest(string manifestPath, out BundleManifest? definition)
@@ -278,22 +254,15 @@ public sealed class BundleService : IBundleService
 
     private void CopyContent(BundleManifest bundleManifest, string workDir, string manifestPath)
     {
-        var stacksBundleDirectory = Path.Combine(workDir, "_stacks");
+        var stacksBundleDirectory = Path.Combine(workDir, StacksFolder);
 
         Directory.CreateDirectory(stacksBundleDirectory);
 
-        File.Copy(manifestPath, Path.Combine(workDir, "manifest.json"));
+        File.Copy(manifestPath, Path.Combine(workDir, ManifestFile));
 
         foreach (var bundleDefinitionStack in bundleManifest.Stacks)
         {
             _fileSystemService.CopyDirectory(bundleDefinitionStack, Path.Combine(stacksBundleDirectory, bundleDefinitionStack));
         }
-    }
-
-    private static void CleanUp(string workDir)
-    {
-        Console.WriteLine("Cleaning ...");
-
-        Directory.Delete(workDir, recursive: true);
     }
 }

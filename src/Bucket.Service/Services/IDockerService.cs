@@ -4,6 +4,8 @@ namespace Bucket.Service.Services;
 
 public interface IDockerService
 {
+    Task<bool> IsDockerRunningAsync();
+
     Task<string> GetVersionAsync();
     
     Task<string> PullImageAsync(string fullImageName);
