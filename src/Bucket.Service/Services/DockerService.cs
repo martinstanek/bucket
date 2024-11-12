@@ -29,6 +29,14 @@ public sealed class DockerService : IDockerService
         await RunDockerProcessAsync($"export {id} -o {outputFile}");
         await RunDockerProcessAsync($"container rm {id}");
     }
+    
+    public async Task SaveImageAsync(string fullImageName, string outputFile)
+    {
+        Guard.Against.NullOrWhiteSpace(fullImageName);
+        Guard.Against.NullOrWhiteSpace(outputFile);
+
+        await RunDockerProcessAsync($"save -o {outputFile} {fullImageName}");
+    }
 
     public async Task ImportImageAsync(string fullImageName, string inputFile)
     {
@@ -43,6 +51,19 @@ public sealed class DockerService : IDockerService
         var id = await RunDockerProcessAsync($"image import {inputFile}");
         await RunDockerProcessAsync($"tag {id} {fullImageName}");
     }
+    
+    public async Task LoadImageAsync(string inputFile)
+    {
+        Guard.Against.NullOrWhiteSpace(inputFile);
+
+        if (!File.Exists(inputFile))
+        {
+            return;
+        }
+
+        await RunDockerProcessAsync($"load -i {inputFile}");
+    }
+
 
     public async Task UpStackAsync(string composeFilePath)
     {

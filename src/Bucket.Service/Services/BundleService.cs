@@ -166,7 +166,7 @@ public sealed class BundleService : IBundleService
             var imageName = $"{image.Alias}.tar";
             var fullPath = Path.Combine(exportDirectory, imageName);
 
-            await _dockerService.ExportImageAsync(image.FullName, fullPath);
+            await _dockerService.SaveImageAsync(image.FullName, fullPath);
 
             Console.WriteLine(imageName);
         });
@@ -196,7 +196,7 @@ public sealed class BundleService : IBundleService
             {
                 Console.WriteLine($"Importing: {path}");
 
-                await _dockerService.ImportImageAsync(image.FullName, path);
+                await _dockerService.LoadImageAsync(path);
             }
         });
     }
