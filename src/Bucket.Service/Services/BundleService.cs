@@ -154,12 +154,7 @@ public sealed class BundleService : IBundleService
             return;
         }
 
-        Console.WriteLine("Pulling images ...");
-
-        foreach (var image in bundleDefinition.Images)
-        {
-            Console.WriteLine(await _dockerService.PullImageAsync(image.FullName));
-        }
+        await PullImagesAsync(bundleDefinition);
 
         var exportDirectory = Path.Combine(workDir, "_export");
 
@@ -179,6 +174,20 @@ public sealed class BundleService : IBundleService
 
     private async Task InstallBundleAsync(BundleManifest bundleManifest, string directory, CancellationToken cancellationToken)
     {
+        if (bundleManifest.Configuration.FetchImages)
+        {
+            await ImportImagesAsync(bundleManifest, directory, cancellationToken);
+        }
+        else
+        {
+            await PullImagesAsync(bundleManifest);            
+        }
+
+        await SpinUpStacksAsync(bundleManifest, directory);
+    }
+
+    private async Task ImportImagesAsync(BundleManifest bundleManifest, string directory, CancellationToken cancellationToken)
+    {
         await Parallel.ForEachAsync(bundleManifest.Images, cancellationToken, async (image, token) =>
         {
             var path = Path.Combine(directory, "_export", $"{image.Alias}.tar");
@@ -190,7 +199,10 @@ public sealed class BundleService : IBundleService
                 await _dockerService.ImportImageAsync(image.FullName, path);
             }
         });
-        
+    }
+
+    private async Task SpinUpStacksAsync(BundleManifest bundleManifest, string directory)
+    {
         foreach (var stack in bundleManifest.Stacks)
         {
             var stackFolder = stack.Trim('.').Trim('/');
@@ -200,6 +212,16 @@ public sealed class BundleService : IBundleService
             {
                 await _dockerService.UpStackAsync(path);
             }
+        }
+    }
+
+    private async Task PullImagesAsync(BundleManifest bundleDefinition)
+    {
+        Console.WriteLine("Pulling images ...");
+
+        foreach (var image in bundleDefinition.Images)
+        {
+            Console.WriteLine(await _dockerService.PullImageAsync(image.FullName));
         }
     }
 
