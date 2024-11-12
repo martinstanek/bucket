@@ -33,7 +33,7 @@ Arguments:
 
 ### Sample Manifest
 
-```
+```json
 {
   "Info": {
     "Name": "TestBundle",
