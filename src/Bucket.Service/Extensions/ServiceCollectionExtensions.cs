@@ -1,6 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Bucket.Service.Options;
+﻿using Bucket.Service.Options;
 using Bucket.Service.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Bucket.Service.Extensions;
 

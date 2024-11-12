@@ -3,9 +3,9 @@ using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Ardalis.GuardClauses;
 using Bucket.Service.Model;
 using Bucket.Service.Serialization;
-using Ardalis.GuardClauses;
 
 namespace Bucket.Service.Services;
 
@@ -19,18 +19,18 @@ public sealed class BundleService : IBundleService
     private const string StacksFolder = "_stacks";
     private const string BundleFolder = "_bundle";
     
-    private readonly IDockerService _dockerService;
     private readonly IFileSystemService _fileSystemService;
     private readonly ICompressorService _compressorService;
+    private readonly IDockerService _dockerService;
 
     public BundleService(
-        IDockerService dockerService, 
         IFileSystemService fileSystemService,
-        ICompressorService compressorService)
+        ICompressorService compressorService,
+        IDockerService dockerService)
     {
-        _dockerService = dockerService;
         _fileSystemService = fileSystemService;
         _compressorService = compressorService;
+        _dockerService = dockerService;
     }
 
     public async Task BundleAsync(string manifestPath, string outputBundlePath, CancellationToken cancellationToken = default)
@@ -45,7 +45,7 @@ public sealed class BundleService : IBundleService
 
         if (!TryParseBundleManifest(manifestPath, out var bundleDefinition) || bundleDefinition is null) 
         {
-            Console.WriteLine($"Failed to find manifest file");
+            Console.WriteLine("Failed to find manifest file");
             
             return;
         }
@@ -115,12 +115,7 @@ public sealed class BundleService : IBundleService
         return Task.CompletedTask;
     }
 
-    private async Task CreateBundleAsync(
-        BundleManifest bundleManifest, 
-        string manifestPath, 
-        string workingDirectory,
-        string outputDirectory, 
-        CancellationToken cancellationToken)
+    private async Task CreateBundleAsync(BundleManifest bundleManifest, string manifestPath, string workingDirectory, string outputDirectory, CancellationToken cancellationToken)
     {
         Guard.Against.NullOrWhiteSpace(workingDirectory);
         Guard.Against.NullOrWhiteSpace(manifestPath);
