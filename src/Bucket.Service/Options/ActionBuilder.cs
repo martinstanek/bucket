@@ -6,8 +6,8 @@ namespace Bucket.Service.Options;
 
 public sealed class ActionBuilder
 {
-    private readonly Arguments _arguments;
     private readonly IReadOnlyCollection<Argument> _options;
+    private readonly Arguments _arguments;
     private Func<Task>? _taskToProcess;
     private Func<Task>? _fallBack;
 
