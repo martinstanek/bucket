@@ -2,6 +2,8 @@
 
  *... a something somewhere between DOCKER RUN and CNAB.*
 
+![logo](https://github.com/martinstanek/bucket/blob/develop/misc/logo.png?raw=true)
+
 Utilise your docker-compose files to create transferable Docker bundles.
 
 ```
