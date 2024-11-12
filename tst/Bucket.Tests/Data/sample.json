@@ -1,7 +1,7 @@
 {
   "Info": {
     "Name": "TestBundle",
-    "Description": "This a first *.kapp defintiion ever ...",
+    "Description": "This a first *.dap definition ever ...",
     "Version": "0.1.0"
   },
   "Configuration": {
@@ -29,11 +29,11 @@
   ],
   "Images": [
     {
-      "Alias": "inage1",
+      "Alias": "image1",
       "FullName": "registry/image1:tag"
     },
     {
-      "Alias": "inage2",
+      "Alias": "image2",
       "FullName": "registry/image2:tag"
     }
   ],
