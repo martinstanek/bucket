@@ -6,6 +6,8 @@
 
 Utilise your docker-compose files to create transferable Docker bundles.
 
+[![Build status](https://awitec.visualstudio.com/Awitec/_apis/build/status/bucket)](https://awitec.visualstudio.com/Awitec/_build/latest?definitionId=51)
+
 ### CLI
 
 ```
@@ -22,6 +24,11 @@ Arguments:
     -t, --stop : Stop given bundle
         The path to the bundle folder is required
     -o, --output : Path to the output file or directory
+```
+
+```
+% ./bucket --bundle ./bundle.json
+% ./bucket --install ./gfms-machinemonitor.dap.tar.gz --output machinemonitor
 ```
 
 ### Sample Manifest
