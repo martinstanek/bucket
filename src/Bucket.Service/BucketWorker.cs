@@ -24,7 +24,7 @@ public sealed class BucketWorker : IHostedService
     public async Task StartAsync(CancellationToken stoppingToken)
     {
         var action = new ActionBuilder(_arguments)
-            .WithBundleCommand((manifestPath, outputPath) => _bundleService.BundleAsync(manifestPath, outputPath, stoppingToken))
+            .WithBundleCommand((manifestPath, outputPath) => _bundleService.BundleAsync(manifestPath, outputPath, string.Empty, stoppingToken))
             .WithInstallCommand((bundlePath, outputDirectory) => _bundleService.InstallAsync(bundlePath, outputDirectory, stoppingToken))
             .WithUninstallCommand(bundlePath => _bundleService.UninstallAsync(bundlePath, stoppingToken))
             .WithStartCommand(manifestPath => _bundleService.StartAsync(manifestPath, stoppingToken))

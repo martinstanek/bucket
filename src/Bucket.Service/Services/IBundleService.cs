@@ -5,9 +5,9 @@ namespace Bucket.Service.Services;
 
 public interface IBundleService
 {
-    Task BundleAsync(string manifestPath, string outputBundlePath, CancellationToken cancellationToken = default);
+    Task BundleAsync(string manifestPath, string outputBundlePath, string workingDirectory, CancellationToken cancellationToken = default);
     
-    Task InstallAsync(string bundlePath, string outputDirecotry, CancellationToken cancellationToken = default);
+    Task InstallAsync(string bundlePath, string outputDirectory, CancellationToken cancellationToken = default);
     
     Task UninstallAsync(string bundlePath, CancellationToken cancellationToken = default);
     

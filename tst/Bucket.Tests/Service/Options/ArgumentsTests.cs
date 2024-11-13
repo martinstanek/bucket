@@ -40,7 +40,7 @@ public sealed class ArgumentsTests
     {
         var arguments = new Arguments("-i -m ./manifest.json -x")
             .AddArgument("i", "install", "Install manifest")
-            .AddArgument("m", "manifest", "Path to the manifest file", mustHaveValue: true);
+            .AddArgument("m", "manifest", "Path to the manifest file", ArgumentValueRequirement.MustHave);
 
         var options = arguments.GetOptions();
         
@@ -54,7 +54,7 @@ public sealed class ArgumentsTests
     {
         var arguments = new Arguments("./manifest.json")
             .AddArgument("i", "install", "Install manifest")
-            .AddArgument("m", "manifest", "Path to the manifest file", mustHaveValue: true);
+            .AddArgument("m", "manifest", "Path to the manifest file", ArgumentValueRequirement.MustHave);
 
         var options = arguments.GetOptions();
         var value = arguments.GetOptionValue("m");
@@ -69,7 +69,7 @@ public sealed class ArgumentsTests
     {
         var arguments = new Arguments("")
             .AddArgument("i", "install", "Install manifest")
-            .AddArgument("m", "manifest", "Path to the manifest file", mustHaveValue: true);
+            .AddArgument("m", "manifest", "Path to the manifest file", ArgumentValueRequirement.MustHave);
 
         var options = arguments.GetOptions();
 
@@ -82,7 +82,7 @@ public sealed class ArgumentsTests
     {
         var arguments = new Arguments("-i -m")
             .AddArgument("i", "install", "Install manifest")
-            .AddArgument("m", "manifest", "Path to the manifest file", mustHaveValue: true);
+            .AddArgument("m", "manifest", "Path to the manifest file", ArgumentValueRequirement.MustHave);
 
         var options = arguments.GetOptions();
         var value = arguments.GetOptionValue("m");
@@ -97,7 +97,7 @@ public sealed class ArgumentsTests
     {
         var arguments = new Arguments("-i -m ./test.json")
             .AddArgument("i", "install", "Install manifest")
-            .AddArgument("m", "manifest", "Path to the manifest file", mustHaveValue: true);
+            .AddArgument("m", "manifest", "Path to the manifest file", ArgumentValueRequirement.MustHave);
 
         arguments.ContainsOption("i").ShouldBeTrue();
         arguments.ContainsOption("m").ShouldBeTrue();
@@ -109,7 +109,7 @@ public sealed class ArgumentsTests
         var arguments = new Arguments("-i -m ./test.json")
             .AddArgument("i", "install", "Install manifest")
             .AddArgument("b", "bundle", "Bundle manifest")
-            .AddArgument("m", "manifest", "Path to the manifest file", mustHaveValue: true);
+            .AddArgument("m", "manifest", "Path to the manifest file", ArgumentValueRequirement.MustHave);
 
         arguments.ContainsOption("i").ShouldBeTrue();
         arguments.ContainsOption("m").ShouldBeTrue();

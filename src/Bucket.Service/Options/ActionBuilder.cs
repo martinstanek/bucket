@@ -133,7 +133,7 @@ public sealed class ActionBuilder
 
     private bool IsUninstallCommand(out string bundleFolderPath)
     {
-        return IsSingleOptionCommandWithValue("u", out bundleFolderPath);
+        return IsSingleOptionCommandWithValue("r", out bundleFolderPath);
     }
 
     private bool IsStopCommand(out string bundleFolderPath)

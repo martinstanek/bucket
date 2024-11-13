@@ -33,11 +33,11 @@ public sealed class BundleService : IBundleService
         _dockerService = dockerService;
     }
 
-    public async Task BundleAsync(string manifestPath, string outputBundlePath, CancellationToken cancellationToken = default)
+    public async Task BundleAsync(string manifestPath, string outputBundlePath, string workingDirectory, CancellationToken cancellationToken = default)
     {
         Guard.Against.NullOrWhiteSpace(manifestPath);
         Guard.Against.NullOrWhiteSpace(outputBundlePath);
-        
+
         if (!await _dockerService.IsDockerRunningAsync())
         {
             return;
@@ -49,11 +49,13 @@ public sealed class BundleService : IBundleService
             
             return;
         }
+
+        var workDir = GetWorkingDirectory(workingDirectory);
     
         Console.WriteLine("The manifest found and parsed:");
         Console.WriteLine($"{bundleDefinition.Info.Name} - {bundleDefinition.Info.Version}");
 
-        await CreateBundleAsync(bundleDefinition, manifestPath, AppContext.BaseDirectory, outputBundlePath, cancellationToken);
+        await CreateBundleAsync(bundleDefinition, manifestPath, workDir, outputBundlePath, cancellationToken);
 
         Console.WriteLine("Done");
     }
@@ -259,5 +261,20 @@ public sealed class BundleService : IBundleService
         {
             _fileSystemService.CopyDirectory(bundleDefinitionStack, Path.Combine(stacksBundleDirectory, bundleDefinitionStack));
         }
+    }
+
+    private static string GetWorkingDirectory(string workingDirectory)
+    {
+        if (!string.IsNullOrWhiteSpace(workingDirectory))
+        {
+            return AppContext.BaseDirectory;
+        }
+
+        if (!Directory.Exists(workingDirectory))
+        {
+            Directory.CreateDirectory(workingDirectory);
+        }
+
+        return workingDirectory;
     }
 }

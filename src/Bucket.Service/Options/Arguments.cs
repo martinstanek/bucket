@@ -26,13 +26,31 @@ public sealed class Arguments
         _args = new LinkedList<string>(args);
     }
 
-    public Arguments AddArgument(string shortName, string fullName, string description, string note = "", bool mustHaveValue = false)
+    public Arguments AddArgument(
+        string shortName, 
+        string fullName, 
+        string description,
+        ArgumentValueRequirement valueRequirement = ArgumentValueRequirement.Optional)
     {
         Guard.Against.NullOrWhiteSpace(shortName);
         Guard.Against.NullOrWhiteSpace(fullName);
         Guard.Against.NullOrWhiteSpace(description);
         
-        var argument = new Argument(shortName, fullName, description, note, mustHaveValue);
+        return AddArgument(shortName, fullName, description, note: string.Empty, valueRequirement);
+    }
+    
+    public Arguments AddArgument(
+        string shortName, 
+        string fullName, 
+        string description, 
+        string note, 
+        ArgumentValueRequirement valueRequirement = ArgumentValueRequirement.Optional)
+    {
+        Guard.Against.NullOrWhiteSpace(shortName);
+        Guard.Against.NullOrWhiteSpace(fullName);
+        Guard.Against.NullOrWhiteSpace(description);
+        
+        var argument = new Argument(shortName, fullName, description, note, valueRequirement);
         
         return AddArgument(argument);
     }
@@ -63,7 +81,7 @@ public sealed class Arguments
                 continue;
             }
             
-            if (option.MustHaveValue && (argNode.Next is null || !IsValue(argNode.Next.Value)))
+            if (option.ValueRequirement == ArgumentValueRequirement.MustHave && (argNode.Next is null || !IsValue(argNode.Next.Value)))
             {
                 _isValid = false;
                 _options.Clear();

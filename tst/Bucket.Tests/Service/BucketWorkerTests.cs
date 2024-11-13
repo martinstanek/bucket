@@ -24,7 +24,8 @@ public sealed class BucketWorkerTests
         context.HostLifeTime.Verify(v => v.StopApplication(), Times.Once);
         context.BundleService.Verify(v => v.BundleAsync(
             It.IsAny<string>(), 
-            It.IsAny<string>(), 
+            It.IsAny<string>(),
+            It.IsAny<string>(),
             It.IsAny<CancellationToken>()), Times.Never);
         context.BundleService.Verify(v => v.InstallAsync(
             "./bundle.dap.tar.gz",
@@ -75,7 +76,8 @@ public sealed class BucketWorkerTests
         context.HostLifeTime.Verify(v => v.StopApplication(), Times.Once);
         context.BundleService.Verify(v => v.BundleAsync(
             It.IsAny<string>(), 
-            It.IsAny<string>(), 
+            It.IsAny<string>(),
+            It.IsAny<string>(),
             It.IsAny<CancellationToken>()), Times.Once);
     }
     
@@ -92,13 +94,14 @@ public sealed class BucketWorkerTests
         context.HostLifeTime.Verify(v => v.StopApplication(), Times.Once);
         context.BundleService.Verify(v => v.BundleAsync(
             "./manifest.json", 
-            "./output.dap.tar.gz", 
+            "./output.dap.tar.gz",
+            "",
             It.IsAny<CancellationToken>()), Times.Once);
     }
     
     [Theory]
-    [InlineData("-u", "./bundle")]
-    [InlineData("--uninstall", "./bundle")]
+    [InlineData("-r", "./bundle")]
+    [InlineData("--remove", "./bundle")]
     public async Task Execute_Uninstall_UninstallExecuted(params string[] args)
     {
         var context = new BucketWorkerTestContext();
@@ -113,8 +116,8 @@ public sealed class BucketWorkerTests
     }
     
     [Theory]
-    [InlineData("-u")]
-    [InlineData("--uninstall")]
+    [InlineData("-r")]
+    [InlineData("--remove")]
     public async Task Execute_Uninstall_BundlePathNotProvided_UninstallNotExecuted(params string[] args)
     {
         var context = new BucketWorkerTestContext();
@@ -209,6 +212,7 @@ public sealed class BucketWorkerTests
         context.BundleService.Verify(v => v.BundleAsync(
             It.IsAny<string>(), 
             It.IsAny<string>(), 
+            It.IsAny<string>(),
             It.IsAny<CancellationToken>()), Times.Never);
     }
 

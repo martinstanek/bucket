@@ -5,7 +5,14 @@ public sealed record Argument(
     string FullName,
     string Description,
     string Note,
-    bool MustHaveValue = false)
+    ArgumentValueRequirement ValueRequirement = ArgumentValueRequirement.Optional)
 {
     public string Value { get; init; } = string.Empty;
+}
+
+public enum ArgumentValueRequirement
+{
+    MustHave,
+    CanNotHave,
+    Optional
 }
