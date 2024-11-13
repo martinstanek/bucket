@@ -9,10 +9,3 @@ public sealed record Argument(
 {
     public string Value { get; init; } = string.Empty;
 }
-
-public enum ArgumentValueRequirement
-{
-    MustHave,
-    CanNotHave,
-    Optional
-}

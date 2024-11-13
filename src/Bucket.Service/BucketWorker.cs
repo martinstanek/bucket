@@ -39,7 +39,11 @@ public sealed class BucketWorker : IHostedService
         }
         catch (Exception e)
         {
-            Console.WriteLine($"Unexpected error: {e.Message}");
+            var error = _arguments.ContainsOption("v")
+                ? e.Message
+                : e.ToString();
+            
+            Console.WriteLine($"Unexpected error: {error}");
         }
         
         _lifetime.StopApplication();

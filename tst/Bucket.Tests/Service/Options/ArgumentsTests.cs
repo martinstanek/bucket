@@ -117,6 +117,50 @@ public sealed class ArgumentsTests
     }
     
     [Fact]
+    public void ContainsOptions_Exclusively_ContainsAll_ReturnsTrue()
+    {
+        var arguments = new Arguments("-i -m -s")
+            .AddArgument("i", "install", "install")
+            .AddArgument("s", "stop", "stop")
+            .AddArgument("m", "manifest", "manifest");
+
+        arguments.ContainsOptions(exclusively: true, "i", "s", "m").ShouldBeTrue();
+    }
+    
+    [Fact]
+    public void ContainsOptions_NotExclusively_ContainsAll_ReturnsTrue()
+    {
+        var arguments = new Arguments("-i -m -s")
+            .AddArgument("i", "install", "install")
+            .AddArgument("s", "stop", "stop")
+            .AddArgument("m", "manifest", "manifest");
+
+        arguments.ContainsOptions(exclusively: false, "i", "s", "m").ShouldBeTrue();
+    }
+    
+    [Fact]
+    public void ContainsOptions_Exclusively_NotContainsAll_ReturnsFalse()
+    {
+        var arguments = new Arguments("-i -m")
+            .AddArgument("i", "install", "install")
+            .AddArgument("s", "stop", "stop")
+            .AddArgument("m", "manifest", "manifest");
+
+        arguments.ContainsOptions(exclusively: true, "i", "s").ShouldBeFalse();
+    }
+    
+    [Fact]
+    public void ContainsOptions_Exclusively_ContainsAllButThereIsMore_ReturnsFalse()
+    {
+        var arguments = new Arguments("-i -m -s")
+            .AddArgument("i", "install", "install")
+            .AddArgument("s", "stop", "stop")
+            .AddArgument("m", "manifest", "manifest");
+
+        arguments.ContainsOptions(exclusively: true, "i", "m").ShouldBeFalse();
+    }
+    
+    [Fact]
     public void AddArgument_ArgumentShortNameAlreadyExists_ThrowsInvalidOperationException()
     {
         Should.Throw<InvalidOperationException>(() => new Arguments("-i -m ./manifest.json")

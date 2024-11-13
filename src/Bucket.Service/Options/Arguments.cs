@@ -141,6 +141,15 @@ public sealed class Arguments
         return IsOption($"-{shortName}");
     }
 
+    public bool ContainsOptions(bool exclusively, params string[] shortNames)
+    {
+        GetOptions();
+        
+        return exclusively
+            ? shortNames.All(a => IsOption($"-{a}")) && _options.Count == shortNames.Length
+            : shortNames.All(a => IsOption($"-{a}"));
+    }
+
     private bool IsArgument(string arg, out Argument? argument)
     {
         var shortNameArgument = _arguments.SingleOrDefault(a => $"-{a.ShortName}".Equals(arg, StringComparison.OrdinalIgnoreCase));
