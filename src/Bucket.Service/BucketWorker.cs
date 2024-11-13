@@ -25,7 +25,7 @@ public sealed class BucketWorker : IHostedService
     {
         var action = new ActionBuilder(_arguments)
             .WithBundleCommand((manifestPath, outputPath) => _bundleService.BundleAsync(manifestPath, outputPath, string.Empty, stoppingToken))
-            .WithInstallCommand((bundlePath, outputDirectory) => _bundleService.InstallAsync(bundlePath, outputDirectory, stoppingToken))
+            .WithRemoveCommand((bundlePath, outputDirectory) => _bundleService.InstallAsync(bundlePath, outputDirectory, stoppingToken))
             .WithUninstallCommand(bundlePath => _bundleService.UninstallAsync(bundlePath, stoppingToken))
             .WithStartCommand(manifestPath => _bundleService.StartAsync(manifestPath, stoppingToken))
             .WithStopCommand(manifestPath => _bundleService.StopAsync(manifestPath, stoppingToken))

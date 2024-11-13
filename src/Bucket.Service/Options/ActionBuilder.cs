@@ -34,7 +34,7 @@ public sealed class ActionBuilder
         return this;
     }
 
-    public ActionBuilder WithInstallCommand(Func<string, string, Task> onInstallCommand)
+    public ActionBuilder WithRemoveCommand(Func<string, string, Task> onInstallCommand)
     {
         if (IsInstallCommand(out var bundlePath, out var outputDirectory))
         {
@@ -46,7 +46,7 @@ public sealed class ActionBuilder
     
     public ActionBuilder WithUninstallCommand(Func<string, Task> onUninstallCommand)
     {
-        if (IsUninstallCommand(out var bundleFolderPath))
+        if (IsRemoveCommand(out var bundleFolderPath))
         {
             _taskToProcess = () => onUninstallCommand(bundleFolderPath);
         }
@@ -131,7 +131,7 @@ public sealed class ActionBuilder
         return valid;
     }
 
-    private bool IsUninstallCommand(out string bundleFolderPath)
+    private bool IsRemoveCommand(out string bundleFolderPath)
     {
         return IsSingleOptionCommandWithValue("r", out bundleFolderPath);
     }
