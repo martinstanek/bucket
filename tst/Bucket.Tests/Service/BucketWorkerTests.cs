@@ -110,7 +110,7 @@ public sealed class BucketWorkerTests
         await worker.StartAsync(CancellationToken.None);
         
         context.HostLifeTime.Verify(v => v.StopApplication(), Times.Once);
-        context.BundleService.Verify(v => v.UninstallAsync(
+        context.BundleService.Verify(v => v.RemoveAsync(
             "./bundle", 
             It.IsAny<CancellationToken>()), Times.Once);
     }
@@ -126,7 +126,7 @@ public sealed class BucketWorkerTests
         await worker.StartAsync(CancellationToken.None);
         
         context.HostLifeTime.Verify(v => v.StopApplication(), Times.Once);
-        context.BundleService.Verify(v => v.UninstallAsync(
+        context.BundleService.Verify(v => v.RemoveAsync(
             It.IsAny<string>(), 
             It.IsAny<CancellationToken>()), Times.Never);
     }

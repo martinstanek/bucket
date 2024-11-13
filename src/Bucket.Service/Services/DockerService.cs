@@ -12,7 +12,7 @@ public sealed class DockerService : IDockerService
     {
         try
         {
-            var version = await GetVersionAsync();
+            var version = await GetDockerStatsAsync();
 
             return !string.IsNullOrWhiteSpace(version);
         }
@@ -25,6 +25,11 @@ public sealed class DockerService : IDockerService
     public Task<string> GetVersionAsync()
     {
         return RunDockerProcessAsync("--version");
+    }
+    
+    public Task<string> GetDockerStatsAsync()
+    {
+        return RunDockerProcessAsync("stats");
     }
 
     public Task<string> PullImageAsync(string fullImageName)

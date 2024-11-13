@@ -9,7 +9,7 @@ public interface IBundleService
     
     Task InstallAsync(string bundlePath, string outputDirectory, CancellationToken cancellationToken = default);
     
-    Task UninstallAsync(string bundlePath, CancellationToken cancellationToken = default);
+    Task RemoveAsync(string bundlePath, CancellationToken cancellationToken = default);
     
     Task StopAsync(string manifestPath, CancellationToken cancellationToken = default);
     

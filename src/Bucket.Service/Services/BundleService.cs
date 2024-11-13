@@ -36,8 +36,7 @@ public sealed class BundleService : IBundleService
     public async Task BundleAsync(string manifestPath, string outputBundlePath, string workingDirectory, CancellationToken cancellationToken = default)
     {
         Guard.Against.NullOrWhiteSpace(manifestPath);
-        Guard.Against.NullOrWhiteSpace(outputBundlePath);
-
+        
         if (!await _dockerService.IsDockerRunningAsync())
         {
             return;
@@ -50,12 +49,13 @@ public sealed class BundleService : IBundleService
             return;
         }
 
+        var outputDir = GetWorkingDirectory(outputBundlePath);
         var workDir = GetWorkingDirectory(workingDirectory);
     
         Console.WriteLine("The manifest found and parsed:");
         Console.WriteLine($"{bundleDefinition.Info.Name} - {bundleDefinition.Info.Version}");
 
-        await CreateBundleAsync(bundleDefinition, manifestPath, workDir, outputBundlePath, cancellationToken);
+        await CreateBundleAsync(bundleDefinition, manifestPath, workDir, outputDir, cancellationToken);
 
         Console.WriteLine("Done");
     }
@@ -96,7 +96,7 @@ public sealed class BundleService : IBundleService
         Console.WriteLine("Invalid bundle");
     }
 
-    public Task UninstallAsync(string bundlePath, CancellationToken cancellationToken = default)
+    public Task RemoveAsync(string bundlePath, CancellationToken cancellationToken = default)
     {
         Console.WriteLine("uninstalling ...");
         
@@ -265,7 +265,7 @@ public sealed class BundleService : IBundleService
 
     private static string GetWorkingDirectory(string workingDirectory)
     {
-        if (!string.IsNullOrWhiteSpace(workingDirectory))
+        if (string.IsNullOrWhiteSpace(workingDirectory))
         {
             return AppContext.BaseDirectory;
         }

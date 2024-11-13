@@ -7,6 +7,8 @@ public interface IDockerService
     Task<bool> IsDockerRunningAsync();
 
     Task<string> GetVersionAsync();
+
+    Task<string> GetDockerStatsAsync();
     
     Task<string> PullImageAsync(string fullImageName);
     
