@@ -95,7 +95,7 @@ public sealed class BucketWorkerTests
         context.BundleService.Verify(v => v.BundleAsync(
             "./manifest.json", 
             "./output.dap.tar.gz",
-            "",
+            string.Empty,
             It.IsAny<CancellationToken>()), Times.Once);
     }
     
