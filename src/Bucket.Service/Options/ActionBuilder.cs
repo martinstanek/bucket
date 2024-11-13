@@ -34,7 +34,7 @@ public sealed class ActionBuilder
         return this;
     }
 
-    public ActionBuilder WithRemoveCommand(Func<string, string, Task> onInstallCommand)
+    public ActionBuilder WithInstallCommand(Func<string, string, Task> onInstallCommand)
     {
         if (IsInstallCommand(out var bundlePath, out var outputDirectory))
         {
@@ -44,7 +44,7 @@ public sealed class ActionBuilder
         return this;
     }
     
-    public ActionBuilder WithUninstallCommand(Func<string, Task> onUninstallCommand)
+    public ActionBuilder WithRemoveCommand(Func<string, Task> onUninstallCommand)
     {
         if (IsRemoveCommand(out var bundleFolderPath))
         {
