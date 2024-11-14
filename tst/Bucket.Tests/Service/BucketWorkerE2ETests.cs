@@ -1,21 +1,21 @@
-using Bucket.Service;
-using Bucket.Service.Extensions;
-using Bucket.Service.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Bucket.Service;
+using Bucket.Service.Extensions;
+using Bucket.Service.Services;
 using Moq;
 using Xunit;
 
 namespace Bucket.Tests.Service;
 
-public sealed class BucketWorkerEndToEndTests
+public sealed class BucketWorkerE2ETests
 {
     [Fact]
     public async Task Execute_Install_InstallationExecuted()
     {
         var context = new BucketWorkerTestContext();
-        var worker = context.GetBucketWorker("-i", "./bundle.dap.tar.gz", "-o", "./temp");
+        var worker = context.GetBucketWorker("-i", "./Data/bundle.dap.tar.gz", "-o", "./temp", "--verbose");
         
         context.DockerService.Setup(s => s.IsDockerRunningAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
         
@@ -23,6 +23,7 @@ public sealed class BucketWorkerEndToEndTests
         
         context.HostLifeTime.Verify(v => v.StopApplication(), Times.Once);
         context.DockerService.Verify(v => v.IsDockerRunningAsync(It.IsAny<CancellationToken>()), Times.Once);
+        context.DockerService.Verify(v => v.UpStackAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
     }
     
     [Fact]

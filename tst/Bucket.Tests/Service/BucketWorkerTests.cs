@@ -14,6 +14,7 @@ public sealed class BucketWorkerTests
     [Theory]
     [InlineData("-i", "./bundle.dap.tar.gz", "-o", "./test")]
     [InlineData("--install", "./bundle.dap.tar.gz", "--output", "./test")]
+    [InlineData("--install", "./bundle.dap.tar.gz", "--output", "./test", "--verbose")]
     public async Task Execute_Install_InstallationExecuted(params string[] args)
     {
         var context = new BucketWorkerTestContext();
@@ -66,6 +67,7 @@ public sealed class BucketWorkerTests
     [InlineData("--bundle", "--output", "./output.dap.tar.gz")]
     [InlineData("-b", "./manifest.json", "--output", "./output.dap.tar.gz")]
     [InlineData("--bundle", "./manifest.json", "--output", "./output.dap.tar.gz")]
+    [InlineData("--bundle", "./manifest.json", "--output", "./output.dap.tar.gz", "--verbose")]
     public async Task Execute_Bundle_BundlingExecuted(params string[] args)
     {
         var context = new BucketWorkerTestContext();
@@ -237,11 +239,12 @@ public sealed class BucketWorkerTests
         }
 
         internal Mock<IHostApplicationLifetime> HostLifeTime { get; } = new();
-        
-        internal Mock<IDockerService> DockerService { get; } = new();
-        
-        internal Mock<IFileSystemService> FileSystemService { get; } = new();
-        
+
         internal Mock<IBundleService> BundleService { get; } = new();
+        
+        private Mock<IDockerService> DockerService { get; } = new();
+        
+        private Mock<IFileSystemService> FileSystemService { get; } = new();
+
     }
 }

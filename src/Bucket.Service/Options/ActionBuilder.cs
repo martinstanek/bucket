@@ -1,12 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Bucket.Service.Options;
 
 public sealed class ActionBuilder
 {
-    private readonly IReadOnlyCollection<Argument> _options;
     private readonly Arguments _arguments;
     private Func<Task>? _taskToProcess;
     private Func<Task>? _fallBack;
@@ -14,7 +12,6 @@ public sealed class ActionBuilder
     public ActionBuilder(Arguments arguments)
     {
         _arguments = arguments;
-        _options = _arguments.GetOptions();
     }
 
     public ActionBuilder WithInvalidArguments(Func<string, Task> onInvalidArguments)
@@ -96,7 +93,7 @@ public sealed class ActionBuilder
         manifestPath = string.Empty;
         outputBundlePath = string.Empty;
         
-        if (_arguments.ContainsOptions(["b"], ["v", "d", "w"]))
+        if (_arguments.ContainsOptions(exclusively: ["b"], optionally: ["v", "d", "w"]))
         {
             manifestPath = _arguments.GetOptionValue("b");
             outputBundlePath = string.Empty;
@@ -104,7 +101,7 @@ public sealed class ActionBuilder
             return true;
         }
 
-        if (!_arguments.ContainsOptions(["b", "o"], ["v", "d", "w"]))
+        if (!_arguments.ContainsOptions(exclusively: ["b", "o"], optionally: ["v", "d", "w"]))
         {
             return false;
         }
@@ -115,22 +112,22 @@ public sealed class ActionBuilder
         return true;
 
     }
-    
+
     private bool IsInstallCommand(out string bundlePath, out string outputDirectory)
     {
-        var valid = _options.Count == 2 
-                    && _arguments.ContainsOption("i")
-                    && _arguments.ContainsOption("o");
+        bundlePath = string.Empty;
+        outputDirectory = string.Empty;
+
+        if (!_arguments.ContainsOptions(["i", "o"], optionally: ["v"]))
+        {
+            return false;
+        }
         
-        bundlePath = valid 
-            ? _arguments.GetOptionValue("i")
-            : string.Empty;
-        
-        outputDirectory = valid 
-            ? _arguments.GetOptionValue("o")
-            : string.Empty;
-        
-        return valid;
+        bundlePath = _arguments.GetOptionValue("i");
+        outputDirectory = _arguments.GetOptionValue("o");
+
+        return true;
+
     }
 
     private bool IsRemoveCommand(out string bundleFolderPath)
@@ -150,13 +147,12 @@ public sealed class ActionBuilder
 
     private bool IsHelpCommand()
     {
-        return _options.Count == 1 && _arguments.ContainsOption("h");
+        return _arguments.ContainsOptions(exclusively: ["h"]);
     }
 
     private bool IsSingleOptionCommandWithValue(string option, out string bundleFolderPath)
     {
-        var valid = _options.Count == 1
-                    && _arguments.ContainsOption(option)
+        var valid = _arguments.ContainsOptions(exclusively: [option], optionally: ["v"])
                     && !string.IsNullOrWhiteSpace(_arguments.GetOptionValue(option));
         
         bundleFolderPath = valid 
