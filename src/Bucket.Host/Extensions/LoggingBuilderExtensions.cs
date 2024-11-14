@@ -13,6 +13,6 @@ internal static class LoggingBuilderExtensions
             options.TimestampFormat = "yyyy-MM-dd HH:mm:ss ";
         });
 
-        return builder.SetMinimumLevel(LogLevel.Warning);
+        return builder.SetMinimumLevel(LogLevel.Information);
     }
 }
