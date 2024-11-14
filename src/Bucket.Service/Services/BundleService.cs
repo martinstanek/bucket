@@ -222,7 +222,7 @@ public sealed class BundleService : IBundleService
             {
                 Console.WriteLine($"Importing: {path}");
 
-                await _dockerService.LoadImageAsync(path, cancellationToken);
+                await _dockerService.LoadImageAsync(path, token);
             }
         });
     }
