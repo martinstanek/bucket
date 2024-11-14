@@ -124,7 +124,7 @@ public sealed class ArgumentsTests
             .AddArgument("s", "stop", "stop")
             .AddArgument("m", "manifest", "manifest");
 
-        arguments.ContainsOptions(exclusively: true, "i", "s", "m").ShouldBeTrue();
+        arguments.ContainsOptions(["i", "s", "m"]).ShouldBeTrue();
     }
     
     [Fact]
@@ -135,7 +135,18 @@ public sealed class ArgumentsTests
             .AddArgument("s", "stop", "stop")
             .AddArgument("m", "manifest", "manifest");
 
-        arguments.ContainsOptions(exclusively: false, "i", "s", "m").ShouldBeTrue();
+        arguments.ContainsOptions(["i", "s"], ["m"]).ShouldBeTrue();
+    }
+    
+    [Fact]
+    public void ContainsOptions_AllExclusively_NotOptional_ReturnsTrue()
+    {
+        var arguments = new Arguments("-i -s")
+            .AddArgument("i", "install", "install")
+            .AddArgument("s", "stop", "stop")
+            .AddArgument("m", "manifest", "manifest");
+
+        arguments.ContainsOptions(["i", "s"], ["f", "g"]).ShouldBeTrue();
     }
     
     [Fact]
@@ -146,7 +157,7 @@ public sealed class ArgumentsTests
             .AddArgument("s", "stop", "stop")
             .AddArgument("m", "manifest", "manifest");
 
-        arguments.ContainsOptions(exclusively: true, "i", "s").ShouldBeFalse();
+        arguments.ContainsOptions(["i", "s"]).ShouldBeFalse();
     }
     
     [Fact]
@@ -157,7 +168,7 @@ public sealed class ArgumentsTests
             .AddArgument("s", "stop", "stop")
             .AddArgument("m", "manifest", "manifest");
 
-        arguments.ContainsOptions(exclusively: true, "i", "m").ShouldBeFalse();
+        arguments.ContainsOptions(["i", "m"]).ShouldBeFalse();
     }
     
     [Fact]

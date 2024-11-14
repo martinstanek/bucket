@@ -2,9 +2,9 @@
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
 using Bucket.Service.Options;
 using Bucket.Service.Services;
-using Microsoft.Extensions.Hosting;
 
 namespace Bucket.Service;
 
@@ -13,8 +13,11 @@ public sealed class BucketWorker : IHostedService
     private readonly IHostApplicationLifetime _lifetime;
     private readonly IBundleService _bundleService;
     private readonly Arguments _arguments;
-    
-    public BucketWorker(IHostApplicationLifetime lifetime, IBundleService bundleService, Arguments arguments)
+
+    public BucketWorker(
+        IHostApplicationLifetime lifetime,
+        IBundleService bundleService, 
+        Arguments arguments)
     {
         _bundleService = bundleService;
         _arguments = arguments;
@@ -40,8 +43,8 @@ public sealed class BucketWorker : IHostedService
         catch (Exception e)
         {
             var error = _arguments.ContainsOption("v")
-                ? e.Message
-                : e.ToString();
+                ? e.ToString()
+                : e.Message;
             
             Console.WriteLine($"Unexpected error: {error}");
         }

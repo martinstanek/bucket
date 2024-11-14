@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Ardalis.GuardClauses;
 using Bucket.Service.Model;
 using Bucket.Service.Serialization;
+using Microsoft.Extensions.Logging;
 
 namespace Bucket.Service.Services;
 
@@ -22,15 +23,18 @@ public sealed class BundleService : IBundleService
     private readonly IFileSystemService _fileSystemService;
     private readonly ICompressorService _compressorService;
     private readonly IDockerService _dockerService;
+    private readonly ILogger<BundleService> _logger;
 
     public BundleService(
         IFileSystemService fileSystemService,
         ICompressorService compressorService,
-        IDockerService dockerService)
+        IDockerService dockerService,
+        ILogger<BundleService> logger)
     {
         _fileSystemService = fileSystemService;
         _compressorService = compressorService;
         _dockerService = dockerService;
+        _logger = logger;
     }
 
     public async Task BundleAsync(string manifestPath, string outputBundlePath, string workingDirectory, CancellationToken cancellationToken = default)
@@ -48,7 +52,7 @@ public sealed class BundleService : IBundleService
             
             return;
         }
-
+        
         var outputDir = GetWorkingDirectory(outputBundlePath);
         var workDir = GetWorkingDirectory(workingDirectory);
     
@@ -141,6 +145,11 @@ public sealed class BundleService : IBundleService
         var bundleDirectory = Path.Combine(workingDirectory, BundleFolder);
 
         Directory.CreateDirectory(bundleDirectory);
+        
+        _logger.LogInformation("Creating bundle");
+        _logger.LogInformation($"Manifest: {manifestPath}");
+        _logger.LogInformation($"Working directory: {workingDirectory}");
+        _logger.LogInformation($"Outpit directory: {outputDirectory}");
 
         await ExportImagesAsync(bundleManifest, bundleDirectory, cancellationToken);
 
@@ -153,6 +162,8 @@ public sealed class BundleService : IBundleService
             BundleExtension, 
             cancellationToken);
 
+        _logger.LogInformation("Deleting working directory");
+        
         Directory.Delete(bundleDirectory, recursive: true);
     }
 
@@ -251,6 +262,8 @@ public sealed class BundleService : IBundleService
 
     private void CopyContent(BundleManifest bundleManifest, string workDir, string manifestPath)
     {
+        _logger.LogInformation("Copying content");
+        
         var stacksBundleDirectory = Path.Combine(workDir, StacksFolder);
 
         Directory.CreateDirectory(stacksBundleDirectory);
@@ -259,6 +272,8 @@ public sealed class BundleService : IBundleService
 
         foreach (var bundleDefinitionStack in bundleManifest.Stacks)
         {
+            _logger.LogInformation($"Copying stack: {bundleDefinitionStack}");
+            
             _fileSystemService.CopyDirectory(bundleDefinitionStack, Path.Combine(stacksBundleDirectory, bundleDefinitionStack));
         }
     }

@@ -29,7 +29,7 @@ public sealed class BucketWorkerEndToEndTests
     public async Task Execute_Bundle_BundlingExecuted()
     {
         var context = new BucketWorkerTestContext();
-        var worker = context.GetBucketWorker("-b", "./Data/sample.json");
+        var worker = context.GetBucketWorker("-b", "./Data/sample.json", "-v");
         
         context.DockerService.Setup(s => s.IsDockerRunningAsync()).ReturnsAsync(true);
         

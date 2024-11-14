@@ -96,22 +96,24 @@ public sealed class ActionBuilder
         manifestPath = string.Empty;
         outputBundlePath = string.Empty;
         
-        var valid = _options.Count is > 0 and < 3 
-                    && _arguments.ContainsOption("b");
-
-        if (valid && _options.Count is 2)
+        if (_arguments.ContainsOptions(["b"], ["v", "d", "w"]))
         {
-            valid = _arguments.ContainsOption("o") 
-                    && !string.IsNullOrWhiteSpace(_arguments.GetOptionValue("o"));
-            
-            outputBundlePath = _arguments.GetOptionValue("o");
+            manifestPath = _arguments.GetOptionValue("b");
+            outputBundlePath = string.Empty;
+
+            return true;
         }
 
-        manifestPath = valid 
-            ? _arguments.GetOptionValue("b")
-            : string.Empty;
+        if (!_arguments.ContainsOptions(["b", "o"], ["v", "d", "w"]))
+        {
+            return false;
+        }
         
-        return valid;
+        manifestPath = _arguments.GetOptionValue("b");
+        outputBundlePath = _arguments.GetOptionValue("o");
+
+        return true;
+
     }
     
     private bool IsInstallCommand(out string bundlePath, out string outputDirectory)

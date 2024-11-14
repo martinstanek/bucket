@@ -141,13 +141,29 @@ public sealed class Arguments
         return IsOption($"-{shortName}");
     }
 
-    public bool ContainsOptions(bool exclusively, params string[] shortNames)
+    public bool ContainsOptions(string[] exclusively)
+    {
+        return ContainsOptions(exclusively, []);
+    }
+
+    public bool ContainsOptions(string[] exclusively, string[] optionally)
     {
         GetOptions();
+
+        var options = _options.Select(s => s.ShortName).ToList();
         
-        return exclusively
-            ? shortNames.All(a => IsOption($"-{a}")) && _options.Count == shortNames.Length
-            : shortNames.All(a => IsOption($"-{a}"));
+        if (!exclusively.All(e => options.Contains(e)))
+        {
+            return false;
+        }
+
+        foreach (var ex in exclusively)
+        {
+            options.Remove(ex);
+        }
+
+        return options.Count == 0 || options.All(optionally.Contains);
+
     }
 
     private bool IsArgument(string arg, out Argument? argument)

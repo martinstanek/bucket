@@ -1,6 +1,8 @@
 ﻿using Bucket.Service.Options;
 using Bucket.Service.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Bucket.Service.Extensions;
 
@@ -22,7 +24,8 @@ public static class ServiceCollectionExtensions
             .AddArgument("d", "delete", "Delete the output directory after the installation", ArgumentValueRequirement.CanNotHave)
             .AddArgument("c", "check", "Check the prerequisites and the manifest if provided");            
         
-        return services
+        services
+            .AddLogging()
             .AddSingleton(arguments)
             .AddSingleton<IDockerService, DockerService>()
             .AddSingleton<IBundleService, BundleService>()
@@ -30,5 +33,9 @@ public static class ServiceCollectionExtensions
             .AddSingleton<ICompressorService, CompressorService>()
             .AddSingleton<BucketWorker>()
             .AddHostedService(s => s.GetRequiredService<BucketWorker>());
+
+        return arguments.ContainsOption("v")
+            ? services
+            : services.AddSingleton<ILoggerFactory, NullLoggerFactory>();
     }
 }
