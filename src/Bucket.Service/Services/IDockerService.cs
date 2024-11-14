@@ -9,7 +9,7 @@ public interface IDockerService
     
     Task<string> GetVersionAsync(CancellationToken cancellationToken);
     
-    Task<string> GetDockerStatsAsync(CancellationToken cancellationToken);
+    Task<string> GetDockerProcessesAsync(CancellationToken cancellationToken);
     
     Task<string> PullImageAsync(string fullImageName, CancellationToken cancellationToken);
     

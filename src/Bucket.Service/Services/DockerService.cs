@@ -28,7 +28,7 @@ public sealed class DockerService : IDockerService
         
         try
         {
-            var stats = await GetDockerStatsAsync(mergedTokenSource.Token);
+            var stats = await GetDockerProcessesAsync(mergedTokenSource.Token);
 
             return !string.IsNullOrWhiteSpace(stats);
         }
@@ -45,9 +45,9 @@ public sealed class DockerService : IDockerService
         return RunDockerProcessAsync("--version", cancellationToken);
     }
     
-    public Task<string> GetDockerStatsAsync(CancellationToken cancellationToken)
+    public Task<string> GetDockerProcessesAsync(CancellationToken cancellationToken)
     {
-        return RunDockerProcessAsync("stats", cancellationToken);
+        return RunDockerProcessAsync("ps", cancellationToken);
     }
 
     public Task<string> PullImageAsync(string fullImageName, CancellationToken cancellationToken)
