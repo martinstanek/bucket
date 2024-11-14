@@ -41,7 +41,7 @@ public sealed class BundleService : IBundleService
     {
         Guard.Against.NullOrWhiteSpace(manifestPath);
         
-        if (!await _dockerService.IsDockerRunningAsync())
+        if (!await _dockerService.IsDockerRunningAsync(cancellationToken))
         {
             return;
         }
@@ -69,7 +69,7 @@ public sealed class BundleService : IBundleService
         Guard.Against.NullOrWhiteSpace(bundlePath);
         Guard.Against.NullOrWhiteSpace(outputDirectory);
 
-        if (!await _dockerService.IsDockerRunningAsync())
+        if (!await _dockerService.IsDockerRunningAsync(cancellationToken))
         {
             return;
         }
@@ -174,7 +174,7 @@ public sealed class BundleService : IBundleService
             return;
         }
 
-        await PullImagesAsync(bundleDefinition);
+        await PullImagesAsync(bundleDefinition, cancellationToken);
 
         var exportDirectory = Path.Combine(workDir, ExportFolder);
 
@@ -186,7 +186,7 @@ public sealed class BundleService : IBundleService
             var imageName = $"{image.Alias}{ExportedImageExtension}";
             var fullPath = Path.Combine(exportDirectory, imageName);
 
-            await _dockerService.SaveImageAsync(image.FullName, fullPath);
+            await _dockerService.SaveImageAsync(image.FullName, fullPath, cancellationToken);
 
             Console.WriteLine(imageName);
         });
@@ -200,10 +200,10 @@ public sealed class BundleService : IBundleService
         }
         else
         {
-            await PullImagesAsync(bundleManifest);            
+            await PullImagesAsync(bundleManifest, cancellationToken);            
         }
 
-        await SpinUpStacksAsync(bundleManifest, directory);
+        await SpinUpStacksAsync(bundleManifest, directory, cancellationToken);
     }
 
     private async Task ImportImagesAsync(BundleManifest bundleManifest, string directory, CancellationToken cancellationToken)
@@ -216,12 +216,12 @@ public sealed class BundleService : IBundleService
             {
                 Console.WriteLine($"Importing: {path}");
 
-                await _dockerService.LoadImageAsync(path);
+                await _dockerService.LoadImageAsync(path, cancellationToken);
             }
         });
     }
 
-    private async Task SpinUpStacksAsync(BundleManifest bundleManifest, string directory)
+    private async Task SpinUpStacksAsync(BundleManifest bundleManifest, string directory, CancellationToken cancellationToken)
     {
         foreach (var stack in bundleManifest.Stacks)
         {
@@ -230,16 +230,16 @@ public sealed class BundleService : IBundleService
 
             if (File.Exists(path))
             {
-                await _dockerService.UpStackAsync(path);
+                await _dockerService.UpStackAsync(path, cancellationToken);
             }
         }
     }
 
-    private async Task PullImagesAsync(BundleManifest bundleDefinition)
+    private async Task PullImagesAsync(BundleManifest bundleDefinition, CancellationToken cancellationToken)
     {
         foreach (var image in bundleDefinition.Images)
         {
-            Console.WriteLine(await _dockerService.PullImageAsync(image.FullName));
+            Console.WriteLine(await _dockerService.PullImageAsync(image.FullName, cancellationToken));
         }
     }
 

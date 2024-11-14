@@ -1,24 +1,25 @@
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Bucket.Service.Services;
 
 public interface IDockerService
 {
-    Task<bool> IsDockerRunningAsync();
-
-    Task<string> GetVersionAsync();
-
-    Task<string> GetDockerStatsAsync();
+    Task<bool> IsDockerRunningAsync(CancellationToken cancellationToken);
     
-    Task<string> PullImageAsync(string fullImageName);
+    Task<string> GetVersionAsync(CancellationToken cancellationToken);
     
-    Task ExportImageAsync(string fullImageName, string outputFile);
+    Task<string> GetDockerStatsAsync(CancellationToken cancellationToken);
     
-    Task SaveImageAsync(string fullImageName, string outputFile);
+    Task<string> PullImageAsync(string fullImageName, CancellationToken cancellationToken);
     
-    Task ImportImageAsync(string fullImageName, string inputFile);
-
-    Task LoadImageAsync(string inputFile);
-
-    Task UpStackAsync(string composeFilePath);
+    Task ExportImageAsync(string fullImageName, string outputFile, CancellationToken cancellationToken);
+    
+    Task SaveImageAsync(string fullImageName, string outputFile, CancellationToken cancellationToken);
+    
+    Task ImportImageAsync(string fullImageName, string inputFile, CancellationToken cancellationToken);
+    
+    Task LoadImageAsync(string inputFile, CancellationToken cancellationToken);
+    
+    Task UpStackAsync(string composeFilePath, CancellationToken cancellationToken);
 }
