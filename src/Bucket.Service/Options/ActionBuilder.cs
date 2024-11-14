@@ -21,11 +21,11 @@ public sealed class ActionBuilder
         return this;
     }
 
-    public ActionBuilder WithBundleCommand(Func<string, string, Task> onBundleCommand)
+    public ActionBuilder WithBundleCommand(Func<string, string, string, Task> onBundleCommand)
     {
-        if (IsBundleCommand(out var manifestPath, out var outputBundlePath))
+        if (IsBundleCommand(out var manifestPath, out var outputBundlePath, out var workingDirectory))
         {
-            _taskToProcess = () => onBundleCommand(manifestPath, outputBundlePath);
+            _taskToProcess = () => onBundleCommand(manifestPath, outputBundlePath, workingDirectory);
         }
 
         return this;
@@ -88,29 +88,13 @@ public sealed class ActionBuilder
                ?? (() => Task.CompletedTask);
     }
 
-    private bool IsBundleCommand(out string manifestPath, out string outputBundlePath)
+    private bool IsBundleCommand(out string manifestPath, out string outputBundlePath, out string workingDirectory)
     {
-        manifestPath = string.Empty;
-        outputBundlePath = string.Empty;
-        
-        if (_arguments.ContainsOptions(exclusively: ["b"], optionally: ["v", "d", "w"]))
-        {
-            manifestPath = _arguments.GetOptionValue("b");
-            outputBundlePath = string.Empty;
-
-            return true;
-        }
-
-        if (!_arguments.ContainsOptions(exclusively: ["b", "o"], optionally: ["v", "d", "w"]))
-        {
-            return false;
-        }
-        
         manifestPath = _arguments.GetOptionValue("b");
         outputBundlePath = _arguments.GetOptionValue("o");
-
-        return true;
-
+        workingDirectory = _arguments.GetOptionValue("w");
+       
+        return _arguments.ContainsOptions(exclusively: ["b"], optionally: ["o", "v", "d", "w"]);
     }
 
     private bool IsInstallCommand(out string bundlePath, out string outputDirectory)

@@ -58,6 +58,12 @@ public sealed class BundleService : IBundleService
     
         Console.WriteLine("The manifest found and parsed:");
         Console.WriteLine($"{bundleDefinition.Info.Name} - {bundleDefinition.Info.Version}");
+        
+        _logger.LogInformation($"Manifest: {manifestPath}");
+        _logger.LogInformation($"Output: {outputDir}");
+        _logger.LogInformation($"Output: {workDir}");
+        _logger.LogInformation($"Images: {bundleDefinition.Images.Count}");
+        _logger.LogInformation($"Stacks: {bundleDefinition.Stacks.Count}");
 
         await CreateBundleAsync(bundleDefinition, manifestPath, workDir, outputDir, cancellationToken);
 

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Bucket.Service.Options;
 using Bucket.Service.Services;
+using Microsoft.Extensions.Logging;
 
 namespace Bucket.Service;
 
@@ -12,22 +13,25 @@ public sealed class BucketWorker : IHostedService
 {
     private readonly IHostApplicationLifetime _lifetime;
     private readonly IBundleService _bundleService;
+    private readonly ILogger<BucketWorker> _logger;
     private readonly Arguments _arguments;
 
     public BucketWorker(
         IHostApplicationLifetime lifetime,
-        IBundleService bundleService, 
-        Arguments arguments)
+        IBundleService bundleService,
+        Arguments arguments,
+        ILogger<BucketWorker> logger)
     {
         _bundleService = bundleService;
         _arguments = arguments;
         _lifetime = lifetime;
+        _logger = logger;
     }
 
     public async Task StartAsync(CancellationToken stoppingToken)
     {
         var action = new ActionBuilder(_arguments)
-            .WithBundleCommand((manifestPath, outputPath) => _bundleService.BundleAsync(manifestPath, outputPath, string.Empty, stoppingToken))
+            .WithBundleCommand((manifestPath, outputPath, workingDir) => _bundleService.BundleAsync(manifestPath, outputPath, workingDir, stoppingToken))
             .WithInstallCommand((bundlePath, outputDirectory) => _bundleService.InstallAsync(bundlePath, outputDirectory, stoppingToken))
             .WithRemoveCommand(bundlePath => _bundleService.RemoveAsync(bundlePath, stoppingToken))
             .WithStartCommand(manifestPath => _bundleService.StartAsync(manifestPath, stoppingToken))
@@ -47,6 +51,8 @@ public sealed class BucketWorker : IHostedService
                 : e.Message;
             
             Console.WriteLine($"Unexpected error: {error}");
+            
+            _logger.LogError(e, e.Message);
         }
         
         _lifetime.StopApplication();
