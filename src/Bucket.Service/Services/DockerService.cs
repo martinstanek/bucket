@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Ardalis.GuardClauses;
@@ -101,16 +102,18 @@ public sealed class DockerService : IDockerService
         await RunDockerProcessAsync($"load -i {inputFile}", cancellationToken);
     }
     
-    public async Task UpStackAsync(string composeFilePath, CancellationToken cancellationToken)
+    public Task UpStackAsync(string composeFilePath, CancellationToken cancellationToken)
     {
         Guard.Against.NullOrWhiteSpace(composeFilePath);
         
         if (!File.Exists(composeFilePath))
         {
-            return;
+            return Task.CompletedTask;
         }
-        
-        await RunDockerProcessAsync($"compose -f \"{composeFilePath}\" up -d --build", cancellationToken);
+
+        return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            ? RunProcessAsync("docker-compose", $"-f \"{composeFilePath}\" up -d", cancellationToken)
+            : RunDockerProcessAsync($"compose -f \"{composeFilePath}\" up -d --build", cancellationToken);
     }
 
     private static Task<string> RunDockerProcessAsync(string arguments, CancellationToken cancellationToken)
