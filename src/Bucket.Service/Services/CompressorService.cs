@@ -54,20 +54,22 @@ public sealed class CompressorService : ICompressorService
         var tempFile = Path.Combine(outputDirectory, Guid.NewGuid().ToString());
         
         await using var inputStream = File.OpenRead(bundlePath);
-        await using var outputFileStream = File.Create(tempFile);
-        await using var gzipStream = new GZipStream(inputStream, CompressionMode.Decompress);
-        
-        await gzipStream.CopyToAsync(outputFileStream, cancellationToken);
-        
-        outputFileStream.Seek(0, SeekOrigin.Begin);
-        
-        await TarFile.ExtractToDirectoryAsync(
-            outputFileStream,
-            outputDirectory,
-            overwriteFiles: true,
-            cancellationToken: cancellationToken
-        );
-        
+        await using (var outputFileStream = File.Create(tempFile))
+        {
+            await using var gzipStream = new GZipStream(inputStream, CompressionMode.Decompress);
+
+            await gzipStream.CopyToAsync(outputFileStream, cancellationToken);
+
+            outputFileStream.Seek(0, SeekOrigin.Begin);
+
+            await TarFile.ExtractToDirectoryAsync(
+                outputFileStream,
+                outputDirectory,
+                overwriteFiles: true,
+                cancellationToken: cancellationToken
+            );
+        }
+
         File.Delete(tempFile);
     }
 }
