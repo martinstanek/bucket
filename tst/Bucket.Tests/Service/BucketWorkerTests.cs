@@ -223,7 +223,7 @@ public sealed class BucketWorkerTests
         public BucketWorker GetBucketWorker(params string[] args)
         {
             var services = new ServiceCollection()
-                .AddBucket(args)
+                .AddBucket(new Mock<IOutput>().Object, args)
                 .RemoveAll<IHostApplicationLifetime>()
                 .RemoveAll<IDockerService>()
                 .RemoveAll<IFileSystemService>()
