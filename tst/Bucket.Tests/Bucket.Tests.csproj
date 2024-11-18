@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="Data\**" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Bundle\**" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

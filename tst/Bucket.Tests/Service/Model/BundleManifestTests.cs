@@ -10,12 +10,12 @@ public sealed class BundleManifestTests
     [Fact]
     public void Test()
     {
-        var content = File.ReadAllText("Data/sample.json");
+        var content = File.ReadAllText("./Bundle/manifest.json");
 
         var definition = JsonSerializer.Deserialize<BundleManifest>(content);
 
         definition.ShouldNotBeNull();
-        definition.Info.Name.ShouldBe("TestBundle");
+        definition.Info.Name.ShouldBe("bucket-test-bundle");
         definition.Info.Description.ShouldNotBeEmpty();
         definition.Configuration.FetchImages.ShouldBeTrue();
         definition.Info.Version.ShouldNotBeEmpty();

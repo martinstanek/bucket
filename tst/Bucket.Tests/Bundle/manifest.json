@@ -1,0 +1,18 @@
+{
+  "Info": {
+    "Name": "bucket-test-bundle",
+    "Description": "Simple .DAP definition example",
+    "Version": "0.1.0"
+  },
+  "Configuration": {
+    "FetchImages": true
+  },
+  "Images": [
+    { "Alias": "backend", "FullName": "docker.io/hashicorp/http-echo:1.0" },
+    { "Alias": "proxy", "FullName": "docker.io/nginx:1.23.4" }
+  ],
+  "Stacks": [
+    "backend",
+    "proxy"
+  ]
+}

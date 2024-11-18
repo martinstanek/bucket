@@ -3,10 +3,10 @@ using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Ardalis.GuardClauses;
+using Microsoft.Extensions.Logging;
 using Bucket.Service.Model;
 using Bucket.Service.Serialization;
-using Microsoft.Extensions.Logging;
+using Ardalis.GuardClauses;
 
 namespace Bucket.Service.Services;
 
@@ -64,7 +64,7 @@ public sealed class BundleService : IBundleService
         
         _logger.LogInformation($"Manifest: {manifestPath}");
         _logger.LogInformation($"Output: {outputDir}");
-        _logger.LogInformation($"Output: {workDir}");
+        _logger.LogInformation($"Workdir: {workDir}");
         _logger.LogInformation($"Images: {bundleDefinition.Images.Count}");
         _logger.LogInformation($"Stacks: {bundleDefinition.Stacks.Count}");
 
@@ -423,10 +423,21 @@ public sealed class BundleService : IBundleService
             {
                 break;
             }
+
+            var manifestDirectory = Path.GetDirectoryName(manifestPath) ?? string.Empty;
+            var stackDirectory = Path.Combine(manifestDirectory, bundleDefinitionStack);
+            var stackOutputDirectory = Path.Combine(stacksBundleDirectory, bundleDefinitionStack);
+
+            if (!Directory.Exists(stackDirectory))
+            {
+                _logger.LogWarning($"Stack directory not found: {stackDirectory}");
+                
+                continue;
+            }
+
+            _logger.LogInformation($"Copying stack folder: {stackDirectory} into {stackOutputDirectory}");
             
-            _logger.LogInformation($"Copying stack: {bundleDefinitionStack}");
-            
-            _fileSystemService.CopyDirectory(bundleDefinitionStack, Path.Combine(stacksBundleDirectory, bundleDefinitionStack));
+            _fileSystemService.CopyDirectory(stackDirectory, stackOutputDirectory);
         }
     }
 

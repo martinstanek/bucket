@@ -1,0 +1,17 @@
+services:
+  
+  nginx:
+    hostname: nginx
+    container_name: nginx
+    image: nginx:1.23.4
+    ports:
+      - "8880:80"
+    networks:
+      - bucket
+    volumes:
+      - ./config:/etc/nginx/conf.d
+    restart: unless-stopped
+    
+networks:
+  bucket:
+    external: true

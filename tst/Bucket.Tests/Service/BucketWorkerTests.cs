@@ -100,7 +100,26 @@ public sealed class BucketWorkerTests
             string.Empty,
             It.IsAny<CancellationToken>()), Times.Once);
     }
-    
+
+    [Theory]
+    [InlineData("-b", "./manifest.json", "-o", "./output.dap.tar.gz", "-w", "./wrk")]
+    [InlineData("--bundle", "./manifest.json", "--output", "./output.dap.tar.gz", "--workdir", "./wrk")]
+    [InlineData("--bundle", "./manifest.json", "--output", "./output.dap.tar.gz", "--verbose", "--workdir", "./wrk")]
+    public async Task Execute_Bundle_WorkdirUsed(params string[] args)
+    {
+        var context = new BucketWorkerTestContext();
+        var worker = context.GetBucketWorker(args);
+        
+        await worker.StartAsync(CancellationToken.None);
+        
+        context.HostLifeTime.Verify(v => v.StopApplication(), Times.Once);
+        context.BundleService.Verify(v => v.BundleAsync(
+            "./manifest.json", 
+            "./output.dap.tar.gz",
+            "./wrk",
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
     [Theory]
     [InlineData("-r", "./bundle")]
     [InlineData("--remove", "./bundle")]

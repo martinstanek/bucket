@@ -1,0 +1,16 @@
+services:
+  
+  echo:
+    hostname: echo
+    container_name: echo
+    image: hashicorp/http-echo:1.0
+    ports:
+      - "5678:5678"
+    networks:
+      - bucket
+    restart: unless-stopped
+  
+networks:
+  bucket:
+    name: bucket
+    attachable: true
