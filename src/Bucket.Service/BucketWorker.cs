@@ -3,9 +3,9 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Bucket.Service.Options;
 using Bucket.Service.Services;
-using Microsoft.Extensions.Logging;
 
 namespace Bucket.Service;
 

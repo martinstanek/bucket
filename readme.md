@@ -17,13 +17,20 @@ Arguments:
         Either the manifest path is provided, or a valid manifest is searched in the current directory
     -i, --install : Install given bundle
         The path to the bundle is required
-    -u, --uninstall : Uninstall given bundle
+    -u, --update : Update given manifest
+        The path to the manifest is required
+    -r, --remove : Uninstall and remove given bundle
         The path to the bundle folder is required
     -s, --start : Start given bundle
         The path to the bundle folder is required
     -t, --stop : Stop given bundle
         The path to the bundle folder is required
     -o, --output : Path to the output file or directory
+    -w, --workdir : Path to the working directory during bundling
+        If no directory provided, the current executable directory will be used
+    -v, --verbose : Turn on internal logs
+    -d, --delete : Delete the output directory after the installation
+    -c, --check : Check the prerequisites and the manifest if provided
 ```
 
 ```
@@ -43,26 +50,6 @@ Arguments:
   "Configuration": {
     "FetchImages": true
   },
-  "Parameters": [
-    {
-      "Name": "test_parameter",
-      "Description": "Please provide the test parameter ...."
-    }
-  ],
-  "Registries": [
-    {
-      "Name": "test1",
-      "Server": "testserver1.io",
-      "User": "user",
-      "Password": "password"
-    },
-    {
-      "Name": "test2",
-      "Server": "testserver2.io",
-      "User": "user",
-      "Password": "password"
-    }
-  ],
   "Images": [
     {
       "Alias": "image1",
@@ -74,7 +61,7 @@ Arguments:
     }
   ],
   "Stacks": [
-    "./test/docker-compose.yml"
+    "./test"
   ]
 }
 ```
