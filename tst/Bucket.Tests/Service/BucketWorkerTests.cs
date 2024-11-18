@@ -134,8 +134,8 @@ public sealed class BucketWorkerTests
     }
     
     [Theory]
-    [InlineData("-s", "./bundle")]
-    [InlineData("--start", "./bundle")]
+    [InlineData("-s", "./bundle/manifest.json")]
+    [InlineData("--start", "./bundle/manifest.json")]
     public async Task Execute_Start_StartExecuted(params string[] args)
     {
         var context = new BucketWorkerTestContext();
@@ -145,7 +145,7 @@ public sealed class BucketWorkerTests
         
         context.HostLifeTime.Verify(v => v.StopApplication(), Times.Once);
         context.BundleService.Verify(v => v.StartAsync(
-            "./bundle", 
+            "./bundle/manifest.json", 
             It.IsAny<CancellationToken>()), Times.Once);
     }
     

@@ -113,11 +113,32 @@ public sealed class BundleService : IBundleService
         return Task.CompletedTask;
     }
 
-    public Task StopAsync(string manifestPath, CancellationToken cancellationToken = default)
+    public async Task StopAsync(string manifestPath, CancellationToken cancellationToken = default)
     {
-        Console.WriteLine("stopping ...");
+        Guard.Against.NullOrWhiteSpace(manifestPath);
+
+        if (!await _dockerService.IsDockerRunningAsync(cancellationToken))
+        {
+            return;
+        }
         
-        return Task.CompletedTask;
+        if (!File.Exists(manifestPath))
+        {
+            Console.WriteLine($"The manifest '{manifestPath}' was not found");
+
+            return;
+        }
+        
+        if (TryParseBundleManifest(manifestPath, out var bundleManifest) && bundleManifest is not null)
+        {
+            var directory = Path.GetDirectoryName(manifestPath) ?? string.Empty;
+            
+            await DownStacksAsync(bundleManifest, directory, cancellationToken);
+            
+            return;
+        }
+        
+        Console.WriteLine("Invalid bundle");
     }
 
     public Task StartAsync(string manifestPath, CancellationToken cancellationToken = default)
@@ -237,6 +258,20 @@ public sealed class BundleService : IBundleService
             if (File.Exists(path))
             {
                 await _dockerService.UpStackAsync(path, cancellationToken);
+            }
+        }
+    }
+    
+    private async Task DownStacksAsync(BundleManifest bundleManifest, string directory, CancellationToken cancellationToken)
+    {
+        foreach (var stack in bundleManifest.Stacks)
+        {
+            var stackFolder = stack.Trim('.').Trim('/');
+            var path = Path.Combine(directory, StacksFolder, stackFolder, ComposeFile);
+
+            if (File.Exists(path))
+            {
+                await _dockerService.DownStackAsync(path, cancellationToken);
             }
         }
     }

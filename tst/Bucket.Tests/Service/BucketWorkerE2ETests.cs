@@ -1,9 +1,9 @@
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Hosting;
 using Bucket.Service;
-using Bucket.Service.Extensions;
 using Bucket.Service.Services;
+using Bucket.Service.Extensions;
 using Moq;
 using Xunit;
 
@@ -40,6 +40,23 @@ public sealed class BucketWorkerE2ETests
         context.DockerService.Verify(v => v.IsDockerRunningAsync(It.IsAny<CancellationToken>()), Times.Once);
         context.DockerService.Verify(v => v.PullImageAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
         context.DockerService.Verify(v => v.SaveImageAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+    }
+    
+    [Fact]
+    public async Task Execute_Stop_StopExecuted()
+    {
+        var context = new BucketWorkerTestContext();
+        var installWorker = context.GetBucketWorker("-i", "./Data/bundle.dap.tar.gz", "-o", "./temp");
+        var stopWorker = context.GetBucketWorker("-t", "./temp/manifest.json");
+        
+        context.DockerService.Setup(s => s.IsDockerRunningAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        
+        await installWorker.StartAsync(CancellationToken.None);
+        await stopWorker.StartAsync(CancellationToken.None);
+        
+        context.HostLifeTime.Verify(v => v.StopApplication(), Times.AtLeastOnce);
+        context.DockerService.Verify(v => v.IsDockerRunningAsync(It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+        context.DockerService.Verify(v => v.DownStackAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
     }
     
     private sealed class BucketWorkerTestContext

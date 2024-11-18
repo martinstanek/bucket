@@ -22,4 +22,6 @@ public interface IDockerService
     Task LoadImageAsync(string inputFile, CancellationToken cancellationToken);
     
     Task UpStackAsync(string composeFilePath, CancellationToken cancellationToken);
+    
+    Task DownStackAsync(string composeFilePath, CancellationToken cancellationToken);
 }

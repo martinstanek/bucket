@@ -116,6 +116,20 @@ public sealed class DockerService : IDockerService
             : RunDockerProcessAsync($"compose -f \"{composeFilePath}\" up -d --build", cancellationToken);
     }
 
+    public Task DownStackAsync(string composeFilePath, CancellationToken cancellationToken)
+    {
+        Guard.Against.NullOrWhiteSpace(composeFilePath);
+        
+        if (!File.Exists(composeFilePath))
+        {
+            return Task.CompletedTask;
+        }
+        
+        return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            ? RunProcessAsync("docker-compose", $"-f \"{composeFilePath}\" down", cancellationToken)
+            : RunDockerProcessAsync($"compose -f \"{composeFilePath}\" down", cancellationToken);
+    }
+
     private static Task<string> RunDockerProcessAsync(string arguments, CancellationToken cancellationToken)
     {
         return RunProcessAsync("docker", arguments, cancellationToken);
