@@ -89,7 +89,22 @@ public sealed class DockerService : IDockerService
         var id = await RunDockerProcessAsync($"image import {inputFile}", cancellationToken);
         await RunDockerProcessAsync($"tag {id} {fullImageName}", cancellationToken);
     }
-    
+
+    public async Task RemoveContainerAsync(string fullImageName, CancellationToken cancellationToken)
+    {
+        Guard.Against.NullOrWhiteSpace(fullImageName);
+
+        var id = await RunDockerProcessAsync($"ps -a -q --filter ancestor=\"{fullImageName}\"", cancellationToken);
+        await RunDockerProcessAsync($"container rm {id}", cancellationToken);
+    }
+
+    public Task RemoveImageAsync(string fullImageName, CancellationToken cancellationToken)
+    {
+        Guard.Against.NullOrWhiteSpace(fullImageName);
+
+        return RunDockerProcessAsync($"image rm {fullImageName}", cancellationToken);
+    }
+
     public async Task LoadImageAsync(string inputFile, CancellationToken cancellationToken)
     {
         Guard.Against.NullOrWhiteSpace(inputFile);

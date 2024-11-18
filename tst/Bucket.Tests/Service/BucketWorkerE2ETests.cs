@@ -59,6 +59,25 @@ public sealed class BucketWorkerE2ETests
         context.DockerService.Verify(v => v.DownStackAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
     }
     
+    [Fact]
+    public async Task Execute_Remove_RemovalExecuted()
+    {
+        var context = new BucketWorkerTestContext();
+        var installWorker = context.GetBucketWorker("-i", "./Data/bundle.dap.tar.gz", "-o", "./temp");
+        var stopWorker = context.GetBucketWorker("-r", "./temp/manifest.json");
+        
+        context.DockerService.Setup(s => s.IsDockerRunningAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        
+        await installWorker.StartAsync(CancellationToken.None);
+        await stopWorker.StartAsync(CancellationToken.None);
+        
+        context.HostLifeTime.Verify(v => v.StopApplication(), Times.AtLeastOnce);
+        context.DockerService.Verify(v => v.IsDockerRunningAsync(It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+        context.DockerService.Verify(v => v.DownStackAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+        context.DockerService.Verify(v => v.RemoveContainerAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+        context.DockerService.Verify(v => v.RemoveImageAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+    }
+    
     private sealed class BucketWorkerTestContext
     {
         public BucketWorker GetBucketWorker(params string[] args)

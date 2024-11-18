@@ -109,11 +109,35 @@ public sealed class BundleService : IBundleService
         _output.WriteLine("Invalid bundle");
     }
 
-    public Task RemoveAsync(string bundlePath, CancellationToken cancellationToken = default)
+    public async Task RemoveAsync(string manifestPath, CancellationToken cancellationToken = default)
     {
-        _output.WriteLine("uninstalling ...");
+        Guard.Against.NullOrWhiteSpace(manifestPath);
         
-        return Task.CompletedTask;
+        if (!await _dockerService.IsDockerRunningAsync(cancellationToken))
+        {
+            return;
+        }
+        
+        if (!File.Exists(manifestPath))
+        {
+            _output.WriteLine($"The manifest '{manifestPath}' was not found");
+
+            return;
+        }
+        
+        if (TryParseBundleManifest(manifestPath, out var bundleManifest) && bundleManifest is not null)
+        {
+            var directory = Path.GetDirectoryName(manifestPath) ?? string.Empty;
+            
+            await DownStacksAsync(bundleManifest, directory, cancellationToken);
+            await RemoveStackArtifactsAsync(bundleManifest, cancellationToken);
+            
+            Directory.Delete(directory);
+            
+            return;
+        }
+        
+        _output.WriteLine("Invalid bundle");
     }
 
     public async Task StopAsync(string manifestPath, CancellationToken cancellationToken = default)
@@ -276,6 +300,15 @@ public sealed class BundleService : IBundleService
             {
                 await _dockerService.DownStackAsync(path, cancellationToken);
             }
+        }
+    }
+
+    private async Task RemoveStackArtifactsAsync(BundleManifest bundleManifest, CancellationToken cancellationToken)
+    {
+        foreach (var image in bundleManifest.Images)
+        {
+            await _dockerService.RemoveContainerAsync(image.FullName, cancellationToken);
+            await _dockerService.RemoveImageAsync(image.FullName, cancellationToken);
         }
     }
 
