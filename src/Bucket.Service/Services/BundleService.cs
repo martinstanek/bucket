@@ -168,11 +168,32 @@ public sealed class BundleService : IBundleService
         _output.WriteLine("Invalid bundle");
     }
 
-    public Task StartAsync(string manifestPath, CancellationToken cancellationToken = default)
+    public async Task StartAsync(string manifestPath, CancellationToken cancellationToken = default)
     {
-        Console.WriteLine("starting ...");
+        Guard.Against.NullOrWhiteSpace(manifestPath);
+
+        if (!await _dockerService.IsDockerRunningAsync(cancellationToken))
+        {
+            return;
+        }
         
-        return Task.CompletedTask;
+        if (!File.Exists(manifestPath))
+        {
+            _output.WriteLine($"The manifest '{manifestPath}' was not found");
+
+            return;
+        }
+        
+        if (TryParseBundleManifest(manifestPath, out var bundleManifest) && bundleManifest is not null)
+        {
+            var directory = Path.GetDirectoryName(manifestPath) ?? string.Empty;
+            
+            await UpStacksAsync(bundleManifest, directory, cancellationToken);
+            
+            return;
+        }
+        
+        _output.WriteLine("Invalid bundle");
     }
 
     private async Task CreateBundleAsync(BundleManifest bundleManifest, string manifestPath, string workingDirectory, string outputDirectory, CancellationToken cancellationToken)
@@ -299,6 +320,20 @@ public sealed class BundleService : IBundleService
             if (File.Exists(path))
             {
                 await _dockerService.DownStackAsync(path, cancellationToken);
+            }
+        }
+    }
+    
+    private async Task UpStacksAsync(BundleManifest bundleManifest, string directory, CancellationToken cancellationToken)
+    {
+        foreach (var stack in bundleManifest.Stacks)
+        {
+            var stackFolder = stack.Trim('.').Trim('/');
+            var path = Path.Combine(directory, StacksFolder, stackFolder, ComposeFile);
+
+            if (File.Exists(path))
+            {
+                await _dockerService.UpStackAsync(path, cancellationToken);
             }
         }
     }
