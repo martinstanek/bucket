@@ -21,6 +21,8 @@ public interface IDockerService
 
     Task RemoveContainerAsync(string fullImageName, CancellationToken cancellationToken);
     
+    Task StopContainerAsync(string fullImageName, CancellationToken cancellationToken);
+    
     Task RemoveImageAsync(string fullImageName, CancellationToken cancellationToken);
     
     Task LoadImageAsync(string inputFile, CancellationToken cancellationToken);

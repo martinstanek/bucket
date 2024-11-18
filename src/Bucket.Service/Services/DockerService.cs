@@ -98,6 +98,14 @@ public sealed class DockerService : IDockerService
         await RunDockerProcessAsync($"container rm {id}", cancellationToken);
     }
 
+    public async Task StopContainerAsync(string fullImageName, CancellationToken cancellationToken)
+    {
+        Guard.Against.NullOrWhiteSpace(fullImageName);
+
+        var id = await RunDockerProcessAsync($"ps -a -q --filter ancestor=\"{fullImageName}\"", cancellationToken);
+        await RunDockerProcessAsync($"container stop {id}", cancellationToken);
+    }
+
     public Task RemoveImageAsync(string fullImageName, CancellationToken cancellationToken)
     {
         Guard.Against.NullOrWhiteSpace(fullImageName);

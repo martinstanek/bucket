@@ -158,9 +158,7 @@ public sealed class BundleService : IBundleService
         
         if (TryParseBundleManifest(manifestPath, out var bundleManifest) && bundleManifest is not null)
         {
-            var directory = Path.GetDirectoryName(manifestPath) ?? string.Empty;
-            
-            await DownStacksAsync(bundleManifest, directory, cancellationToken);
+            await StopStacksAsync(bundleManifest, cancellationToken);
             
             return;
         }
@@ -228,7 +226,7 @@ public sealed class BundleService : IBundleService
 
         await ExportImagesAsync(bundleManifest, bundleDirectory, cancellationToken);
 
-        CopyContent(bundleManifest, bundleDirectory, manifestPath);
+        CopyContent(bundleManifest, bundleDirectory, manifestPath, cancellationToken);
 
         await _compressorService.PackBundleAsync(
             bundleManifest, 
@@ -300,6 +298,11 @@ public sealed class BundleService : IBundleService
     {
         foreach (var stack in bundleManifest.Stacks)
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                break;
+            }
+            
             var stackFolder = stack.Trim('.').Trim('/');
             var path = Path.Combine(directory, StacksFolder, stackFolder, ComposeFile);
 
@@ -314,6 +317,11 @@ public sealed class BundleService : IBundleService
     {
         foreach (var stack in bundleManifest.Stacks)
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                break;
+            }
+            
             var stackFolder = stack.Trim('.').Trim('/');
             var path = Path.Combine(directory, StacksFolder, stackFolder, ComposeFile);
 
@@ -324,10 +332,28 @@ public sealed class BundleService : IBundleService
         }
     }
     
+    private async Task StopStacksAsync(BundleManifest bundleManifest, CancellationToken cancellationToken)
+    {
+        foreach (var image in bundleManifest.Images)
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                break;
+            }
+            
+            await _dockerService.StopContainerAsync(image.FullName, cancellationToken);
+        }
+    }
+
     private async Task UpStacksAsync(BundleManifest bundleManifest, string directory, CancellationToken cancellationToken)
     {
         foreach (var stack in bundleManifest.Stacks)
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                break;
+            }
+
             var stackFolder = stack.Trim('.').Trim('/');
             var path = Path.Combine(directory, StacksFolder, stackFolder, ComposeFile);
 
@@ -342,6 +368,11 @@ public sealed class BundleService : IBundleService
     {
         foreach (var image in bundleManifest.Images)
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                break;
+            }
+
             await _dockerService.RemoveImageAsync(image.FullName, cancellationToken);
         }
     }
@@ -350,6 +381,11 @@ public sealed class BundleService : IBundleService
     {
         foreach (var image in bundleDefinition.Images)
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                break;
+            }
+
             _output.WriteLine(await _dockerService.PullImageAsync(image.FullName, cancellationToken));
         }
     }
@@ -371,7 +407,7 @@ public sealed class BundleService : IBundleService
         }
     }
 
-    private void CopyContent(BundleManifest bundleManifest, string workDir, string manifestPath)
+    private void CopyContent(BundleManifest bundleManifest, string workDir, string manifestPath, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Copying content");
         
@@ -383,6 +419,11 @@ public sealed class BundleService : IBundleService
 
         foreach (var bundleDefinitionStack in bundleManifest.Stacks)
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                break;
+            }
+            
             _logger.LogInformation($"Copying stack: {bundleDefinitionStack}");
             
             _fileSystemService.CopyDirectory(bundleDefinitionStack, Path.Combine(stacksBundleDirectory, bundleDefinitionStack));
