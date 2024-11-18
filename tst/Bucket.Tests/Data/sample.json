@@ -7,26 +7,6 @@
   "Configuration": {
     "FetchImages": true
   },
-  "Parameters": [
-    {
-      "Name": "test_parameter",
-      "Description": "Please provide the test parameter ...."
-    }
-  ],
-  "Registries": [
-    {
-      "Name": "test1",
-      "Server": "testserver1.io",
-      "User": "user",
-      "Password": "password"
-    },
-    {
-      "Name": "test2",
-      "Server": "testserver2.io",
-      "User": "user",
-      "Password": "password"
-    }
-  ],
   "Images": [
     {
       "Alias": "image1",

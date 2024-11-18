@@ -20,8 +20,6 @@ public sealed class BundleManifestTests
         definition.Configuration.FetchImages.ShouldBeTrue();
         definition.Info.Version.ShouldNotBeEmpty();
         definition.Images.ShouldNotBeEmpty();
-        definition.Parameters.ShouldNotBeEmpty();
-        definition.Registries.ShouldNotBeEmpty();
         definition.Stacks.ShouldNotBeEmpty();
     }
 }
