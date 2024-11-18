@@ -54,6 +54,8 @@ public sealed class DockerService : IDockerService
     public Task<string> PullImageAsync(string fullImageName, CancellationToken cancellationToken)
     {
         Guard.Against.NullOrWhiteSpace(fullImageName);
+        
+        _logger.LogInformation($"Pulling image: {fullImageName}");
 
         return RunDockerProcessAsync($"pull {fullImageName}", cancellationToken);
     }
@@ -62,9 +64,17 @@ public sealed class DockerService : IDockerService
     {
         Guard.Against.NullOrWhiteSpace(fullImageName);
         Guard.Against.NullOrWhiteSpace(outputFile);
+        
+        _logger.LogInformation($"Creating container image: {fullImageName}");
 
         var id = await RunDockerProcessAsync($"create {fullImageName}", cancellationToken);
+        
+        _logger.LogInformation($"Exporting container id: {id}");
+        
         await RunDockerProcessAsync($"export {id} -o {outputFile}", cancellationToken);
+        
+        _logger.LogInformation($"Removing container id: {id}");
+        
         await RunDockerProcessAsync($"container rm {id}", cancellationToken);
     }
     
@@ -72,6 +82,8 @@ public sealed class DockerService : IDockerService
     {
         Guard.Against.NullOrWhiteSpace(fullImageName);
         Guard.Against.NullOrWhiteSpace(outputFile);
+        
+        _logger.LogInformation($"Saving image: {fullImageName}");
 
         await RunDockerProcessAsync($"save -o {outputFile} {fullImageName}", cancellationToken);
     }
@@ -83,10 +95,17 @@ public sealed class DockerService : IDockerService
 
         if (!File.Exists(inputFile))
         {
+            _logger.LogWarning($"Input file not found: {inputFile}");
+            
             return;
         }
 
+        _logger.LogInformation($"Importing image: {fullImageName}");
+        
         var id = await RunDockerProcessAsync($"image import {inputFile}", cancellationToken);
+        
+        _logger.LogInformation($"Re-tagging image id: {id}");
+        
         await RunDockerProcessAsync($"tag {id} {fullImageName}", cancellationToken);
     }
 
@@ -94,7 +113,19 @@ public sealed class DockerService : IDockerService
     {
         Guard.Against.NullOrWhiteSpace(fullImageName);
 
+        _logger.LogInformation($"Removing container based on the image: {fullImageName}");
+        
         var id = await RunDockerProcessAsync($"ps -a -q --filter ancestor=\"{fullImageName}\"", cancellationToken);
+
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            _logger.LogWarning($"Can't find container based on the image: {fullImageName}");
+            
+            return;
+        }
+        
+        _logger.LogInformation($"Removing container id: {id}");
+        
         await RunDockerProcessAsync($"container rm {id}", cancellationToken);
     }
 
@@ -103,12 +134,22 @@ public sealed class DockerService : IDockerService
         Guard.Against.NullOrWhiteSpace(fullImageName);
 
         var id = await RunDockerProcessAsync($"ps -a -q --filter ancestor=\"{fullImageName}\"", cancellationToken);
+        
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            _logger.LogWarning($"Can't find container based on the image: {fullImageName}");
+            
+            return;
+        }
+        
         await RunDockerProcessAsync($"container stop {id}", cancellationToken);
     }
 
     public Task RemoveImageAsync(string fullImageName, CancellationToken cancellationToken)
     {
         Guard.Against.NullOrWhiteSpace(fullImageName);
+        
+        _logger.LogInformation($"Removing image: {fullImageName}");
 
         return RunDockerProcessAsync($"image rm {fullImageName}", cancellationToken);
     }
@@ -119,6 +160,8 @@ public sealed class DockerService : IDockerService
 
         if (!File.Exists(inputFile))
         {
+            _logger.LogWarning($"Input file not found: {inputFile}");
+            
             return;
         }
 
@@ -131,6 +174,8 @@ public sealed class DockerService : IDockerService
         
         if (!File.Exists(composeFilePath))
         {
+            _logger.LogWarning($"Compose file not found: {composeFilePath}");
+            
             return Task.CompletedTask;
         }
 
@@ -145,6 +190,8 @@ public sealed class DockerService : IDockerService
         
         if (!File.Exists(composeFilePath))
         {
+            _logger.LogWarning($"Compose file not found: {composeFilePath}");
+            
             return Task.CompletedTask;
         }
         
@@ -153,12 +200,12 @@ public sealed class DockerService : IDockerService
             : RunDockerProcessAsync($"compose -f \"{composeFilePath}\" down", cancellationToken);
     }
 
-    private static Task<string> RunDockerProcessAsync(string arguments, CancellationToken cancellationToken)
+    private Task<string> RunDockerProcessAsync(string arguments, CancellationToken cancellationToken)
     {
         return RunProcessAsync("docker", arguments, cancellationToken);
     }
 
-    private static async Task<string> RunProcessAsync(string name, string arguments, CancellationToken cancellationToken)
+    private async Task<string> RunProcessAsync(string name, string arguments, CancellationToken cancellationToken)
     {
         var info = new ProcessStartInfo
         {
@@ -167,6 +214,8 @@ public sealed class DockerService : IDockerService
             RedirectStandardOutput = true
         };
 
+        _logger.LogInformation($"Starting process: {name} {arguments}");
+        
         var process = Process.Start(info);
 
         if (process is null)
