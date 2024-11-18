@@ -23,17 +23,20 @@ public sealed class BundleService : IBundleService
     private readonly IFileSystemService _fileSystemService;
     private readonly ICompressorService _compressorService;
     private readonly IDockerService _dockerService;
+    private readonly IOutput _output;
     private readonly ILogger<BundleService> _logger;
 
     public BundleService(
         IFileSystemService fileSystemService,
         ICompressorService compressorService,
         IDockerService dockerService,
+        IOutput output,
         ILogger<BundleService> logger)
     {
         _fileSystemService = fileSystemService;
         _compressorService = compressorService;
         _dockerService = dockerService;
+        _output = output;
         _logger = logger;
     }
 
@@ -48,7 +51,7 @@ public sealed class BundleService : IBundleService
 
         if (!TryParseBundleManifest(manifestPath, out var bundleDefinition) || bundleDefinition is null) 
         {
-            Console.WriteLine("Failed to find manifest file");
+            _output.WriteLine("Failed to find manifest file");
             
             return;
         }
@@ -56,8 +59,8 @@ public sealed class BundleService : IBundleService
         var outputDir = GetWorkingDirectory(outputBundlePath);
         var workDir = GetWorkingDirectory(workingDirectory);
     
-        Console.WriteLine("The manifest found and parsed:");
-        Console.WriteLine($"{bundleDefinition.Info.Name} - {bundleDefinition.Info.Version}");
+        _output.WriteLine("The manifest found and parsed:");
+        _output.WriteLine($"{bundleDefinition.Info.Name} - {bundleDefinition.Info.Version}");
         
         _logger.LogInformation($"Manifest: {manifestPath}");
         _logger.LogInformation($"Output: {outputDir}");
@@ -67,7 +70,7 @@ public sealed class BundleService : IBundleService
 
         await CreateBundleAsync(bundleDefinition, manifestPath, workDir, outputDir, cancellationToken);
 
-        Console.WriteLine("Done");
+        _output.WriteLine("Done");
     }
 
     public async Task InstallAsync(string bundlePath, string outputDirectory, CancellationToken cancellationToken = default)
@@ -82,7 +85,7 @@ public sealed class BundleService : IBundleService
         
         if (!File.Exists(bundlePath))
         {
-            Console.WriteLine($"The bundle '{bundlePath}' was not found");
+            _output.WriteLine($"The bundle '{bundlePath}' was not found");
 
             return;
         }
@@ -103,12 +106,12 @@ public sealed class BundleService : IBundleService
             return;
         }
         
-        Console.WriteLine("Invalid bundle");
+        _output.WriteLine("Invalid bundle");
     }
 
     public Task RemoveAsync(string bundlePath, CancellationToken cancellationToken = default)
     {
-        Console.WriteLine("uninstalling ...");
+        _output.WriteLine("uninstalling ...");
         
         return Task.CompletedTask;
     }
@@ -124,7 +127,7 @@ public sealed class BundleService : IBundleService
         
         if (!File.Exists(manifestPath))
         {
-            Console.WriteLine($"The manifest '{manifestPath}' was not found");
+            _output.WriteLine($"The manifest '{manifestPath}' was not found");
 
             return;
         }
@@ -138,7 +141,7 @@ public sealed class BundleService : IBundleService
             return;
         }
         
-        Console.WriteLine("Invalid bundle");
+        _output.WriteLine("Invalid bundle");
     }
 
     public Task StartAsync(string manifestPath, CancellationToken cancellationToken = default)
@@ -215,7 +218,7 @@ public sealed class BundleService : IBundleService
 
             await _dockerService.SaveImageAsync(image.FullName, fullPath, cancellationToken);
 
-            Console.WriteLine(imageName);
+            _output.WriteLine(imageName);
         });
     }
 
@@ -241,7 +244,7 @@ public sealed class BundleService : IBundleService
 
             if (File.Exists(path))
             {
-                Console.WriteLine($"Importing: {path}");
+                _output.WriteLine($"Importing: {path}");
 
                 await _dockerService.LoadImageAsync(path, token);
             }
@@ -280,7 +283,7 @@ public sealed class BundleService : IBundleService
     {
         foreach (var image in bundleDefinition.Images)
         {
-            Console.WriteLine(await _dockerService.PullImageAsync(image.FullName, cancellationToken));
+            _output.WriteLine(await _dockerService.PullImageAsync(image.FullName, cancellationToken));
         }
     }
 

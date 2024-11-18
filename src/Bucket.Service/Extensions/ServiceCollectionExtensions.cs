@@ -8,7 +8,7 @@ namespace Bucket.Service.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddBucket(this IServiceCollection services, string[] args)
+    public static IServiceCollection AddBucket(this IServiceCollection services, IOutput output, string[] args)
     {
         var arguments = new Arguments(args)
             .AddArgument("h", "help", "Show this help")
@@ -26,6 +26,7 @@ public static class ServiceCollectionExtensions
         
         services
             .AddLogging()
+            .AddSingleton(output)
             .AddSingleton(arguments)
             .AddSingleton<IDockerService, DockerService>()
             .AddSingleton<IBundleService, BundleService>()
