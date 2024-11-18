@@ -7,7 +7,7 @@ public sealed class ActionBuilder
 {
     private readonly Arguments _arguments;
     private Func<Task>? _taskToProcess;
-    private Func<Task>? _fallBack;
+    private Func<Task>? _taskToFallback;
 
     public ActionBuilder(Arguments arguments)
     {
@@ -16,7 +16,7 @@ public sealed class ActionBuilder
 
     public ActionBuilder WithInvalidArguments(Func<string, Task> onInvalidArguments)
     {
-        _fallBack = () => onInvalidArguments("Invalid arguments");
+        _taskToFallback = () => onInvalidArguments("Invalid arguments");
         
         return this;
     }
@@ -84,7 +84,7 @@ public sealed class ActionBuilder
     public Func<Task> Build()
     {
         return _taskToProcess 
-               ?? _fallBack 
+               ?? _taskToFallback 
                ?? (() => Task.CompletedTask);
     }
 

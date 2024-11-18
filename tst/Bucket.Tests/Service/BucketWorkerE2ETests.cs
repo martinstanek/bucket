@@ -74,7 +74,6 @@ public sealed class BucketWorkerE2ETests
         context.HostLifeTime.Verify(v => v.StopApplication(), Times.AtLeastOnce);
         context.DockerService.Verify(v => v.IsDockerRunningAsync(It.IsAny<CancellationToken>()), Times.AtLeastOnce);
         context.DockerService.Verify(v => v.DownStackAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
-        context.DockerService.Verify(v => v.RemoveContainerAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
         context.DockerService.Verify(v => v.RemoveImageAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
     }
     

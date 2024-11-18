@@ -307,7 +307,6 @@ public sealed class BundleService : IBundleService
     {
         foreach (var image in bundleManifest.Images)
         {
-            await _dockerService.RemoveContainerAsync(image.FullName, cancellationToken);
             await _dockerService.RemoveImageAsync(image.FullName, cancellationToken);
         }
     }
