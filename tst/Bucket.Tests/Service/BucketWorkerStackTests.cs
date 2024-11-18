@@ -14,13 +14,10 @@ public sealed class BucketWorkerStackTests
     [Fact]
     public async Task Execute_Install_InstallationExecuted()
     {
-        var workDir = Path.Combine("./", Guid.NewGuid().ToString("N"));
-        var bundlePath = Path.Combine(workDir, "bucket-test-bundle.dap.tar.gz");
-        var bundleFolderPath = Path.Combine(workDir, "dap");
-        var context = new BucketWorkerTestContext();
-        var bundleWorker = context.GetBucketWorker("--bundle", "./Bundle/manifest.json", "--workdir", workDir, "--output", workDir);
-        var installWorker = context.GetBucketWorker("--install",  bundlePath, "--output", bundleFolderPath);
-        
+        using var context = new BucketWorkerTestContext();
+        var bundleWorker = context.GetBucketWorker("--bundle", "./Bundle/manifest.json", "--workdir", context.Workdir, "--output", context.Workdir);
+        var installWorker = context.GetBucketWorker("--install",  context.BundlePath, "--output", context.BundleFolderPath);
+
         context.DockerService.Setup(s => s.IsDockerRunningAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
         await bundleWorker.StartAsync(CancellationToken.None);
@@ -29,8 +26,6 @@ public sealed class BucketWorkerStackTests
         context.HostLifeTime.Verify(v => v.StopApplication(), Times.AtLeastOnce);
         context.DockerService.Verify(v => v.IsDockerRunningAsync(It.IsAny<CancellationToken>()), Times.AtLeastOnce);
         context.DockerService.Verify(v => v.UpStackAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
-        
-        Directory.Delete(workDir, recursive: true);
     }
     
     [Fact]
@@ -52,14 +47,10 @@ public sealed class BucketWorkerStackTests
     [Fact]
     public async Task Execute_Stop_StopExecuted()
     {
-        var workDir = Path.Combine("./", Guid.NewGuid().ToString("N"));
-        var bundlePath = Path.Combine(workDir, "bucket-test-bundle.dap.tar.gz");
-        var bundleFolderPath = Path.Combine(workDir, "dap");
-        var bundleManifestPath = Path.Combine(bundleFolderPath, "manifest.json");
-        var context = new BucketWorkerTestContext();
-        var bundleWorker = context.GetBucketWorker("--bundle", "./Bundle/manifest.json", "--workdir", workDir, "--output", workDir);
-        var installWorker = context.GetBucketWorker("--install",  bundlePath, "--output", bundleFolderPath);
-        var stopWorker = context.GetBucketWorker("--stop", bundleManifestPath);
+        using var context = new BucketWorkerTestContext();
+        var bundleWorker = context.GetBucketWorker("--bundle", "./Bundle/manifest.json", "--workdir", context.Workdir, "--output", context.Workdir);
+        var installWorker = context.GetBucketWorker("--install",  context.BundlePath, "--output", context.BundleFolderPath);
+        var stopWorker = context.GetBucketWorker("--stop", context.BundleManifestPath);
         
         context.DockerService.Setup(s => s.IsDockerRunningAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
@@ -70,21 +61,15 @@ public sealed class BucketWorkerStackTests
         context.HostLifeTime.Verify(v => v.StopApplication(), Times.AtLeastOnce);
         context.DockerService.Verify(v => v.IsDockerRunningAsync(It.IsAny<CancellationToken>()), Times.AtLeastOnce);
         context.DockerService.Verify(v => v.StopContainerAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
-        
-        Directory.Delete(workDir, recursive: true);
     }
     
     [Fact]
     public async Task Execute_Remove_RemovalExecuted()
     {
-        var workDir = Path.Combine("./", Guid.NewGuid().ToString("N"));
-        var bundlePath = Path.Combine(workDir, "bucket-test-bundle.dap.tar.gz");
-        var bundleFolderPath = Path.Combine(workDir, "dap");
-        var bundleManifestPath = Path.Combine(bundleFolderPath, "manifest.json");
-        var context = new BucketWorkerTestContext();
-        var bundleWorker = context.GetBucketWorker("--bundle", "./Bundle/manifest.json", "--workdir", workDir, "--output", workDir);
-        var installWorker = context.GetBucketWorker("--install",  bundlePath, "--output", bundleFolderPath);
-        var removeWorker = context.GetBucketWorker("-r", bundleManifestPath);
+        using var context = new BucketWorkerTestContext();
+        var bundleWorker = context.GetBucketWorker("--bundle", "./Bundle/manifest.json", "--workdir", context.Workdir, "--output", context.Workdir);
+        var installWorker = context.GetBucketWorker("--install",  context.BundlePath, "--output", context.BundleFolderPath);
+        var removeWorker = context.GetBucketWorker("-r", context.BundleManifestPath);
         
         context.DockerService.Setup(s => s.IsDockerRunningAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
         
@@ -96,21 +81,15 @@ public sealed class BucketWorkerStackTests
         context.DockerService.Verify(v => v.IsDockerRunningAsync(It.IsAny<CancellationToken>()), Times.AtLeastOnce);
         context.DockerService.Verify(v => v.DownStackAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
         context.DockerService.Verify(v => v.RemoveImageAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
-        
-        Directory.Delete(workDir, recursive: true);
     }
     
     [Fact]
     public async Task Execute_Start_StartExecuted()
     {
-        var workDir = Path.Combine("./", Guid.NewGuid().ToString("N"));
-        var bundlePath = Path.Combine(workDir, "bucket-test-bundle.dap.tar.gz");
-        var bundleFolderPath = Path.Combine(workDir, "dap");
-        var bundleManifestPath = Path.Combine(bundleFolderPath, "manifest.json");
         var context = new BucketWorkerTestContext();
-        var bundleWorker = context.GetBucketWorker("--bundle", "./Bundle/manifest.json", "--workdir", workDir, "--output", workDir);
-        var installWorker = context.GetBucketWorker("--install",  bundlePath, "--output", bundleFolderPath);
-        var startWorker = context.GetBucketWorker("-s", bundleManifestPath);
+        var bundleWorker = context.GetBucketWorker("--bundle", "./Bundle/manifest.json", "--workdir", context.Workdir, "--output", context.Workdir);
+        var installWorker = context.GetBucketWorker("--install",  context.BundlePath, "--output", context.BundleFolderPath);
+        var startWorker = context.GetBucketWorker("-s", context.BundleManifestPath);
         
         context.DockerService.Setup(s => s.IsDockerRunningAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
@@ -121,12 +100,12 @@ public sealed class BucketWorkerStackTests
         context.HostLifeTime.Verify(v => v.StopApplication(), Times.AtLeastOnce);
         context.DockerService.Verify(v => v.IsDockerRunningAsync(It.IsAny<CancellationToken>()), Times.AtLeastOnce);
         context.DockerService.Verify(v => v.UpStackAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
-        
-        Directory.Delete(workDir, recursive: true);
     }
-    
-    private sealed class BucketWorkerTestContext
+
+    private sealed class BucketWorkerTestContext : IDisposable
     {
+        private readonly string _workDir = Path.Combine("./", Guid.NewGuid().ToString("N"));
+        
         public BucketWorker GetBucketWorker(params string[] args)
         {
             var services = new ServiceCollection()
@@ -140,9 +119,25 @@ public sealed class BucketWorkerStackTests
                 .BuildServiceProvider()
                 .GetRequiredService<BucketWorker>();
         }
+        
+        public void Dispose()
+        {
+            if (Directory.Exists(_workDir))
+            {
+                Directory.Delete(_workDir, recursive: true);
+            }
+        }
 
         internal Mock<IHostApplicationLifetime> HostLifeTime { get; } = new();
         
         internal Mock<IDockerService> DockerService { get; } = new();
+        
+        internal string Workdir => _workDir;
+
+        internal string BundlePath => Path.Combine(_workDir, "bucket-test-bundle.dap.tar.gz");
+        
+        internal string BundleFolderPath => Path.Combine(_workDir, "dap");
+        
+        internal string BundleManifestPath => Path.Combine(BundleFolderPath, "manifest.json");
     }
 }
