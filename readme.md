@@ -45,7 +45,8 @@ Our compose files could look like this:
 
 backend: [docker-compose.yml](https://github.com/martinstanek/bucket/blob/develop/tst/Bucket.Tests/Bundle/backend/docker-compose.yml)\
 proxy: [docker-compose.yml](https://github.com/martinstanek/bucket/blob/develop/tst/Bucket.Tests/Bundle/proxy/docker-compose.yml)\
-manifest:
+
+And the manifest.json:
 
 ```json
 {
@@ -76,9 +77,8 @@ Then by hitting:
 % ./bucket --bundle ./bundle.json
 ```
 
-we'll generate **bucket-test-bundle.dap.tar.gz**
-
-Then on the target machine:
+We'll generate **bucket-test-bundle.dap.tar.gz**\
+Followed on the target machine:
 
 ```
 % ./bucket --install  ./bucket-test-bundle.dap.tar.gz --output ./my-app-folder
@@ -86,5 +86,5 @@ Then on the target machine:
 
 Should result in two happy compose stacks up&running.
 
-Happy Bundling,
+Happy Bundling,\
 Martin
