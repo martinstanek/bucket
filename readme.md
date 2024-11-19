@@ -2,7 +2,7 @@
 
  *... a simple docker compose wrapper/cli tool/library for creating transferable single file bundles*
 
-![logo](https://github.com/martinstanek/bucket/blob/develop/misc/logo.png?raw=true)
+![logo](https://github.com/martinstanek/bucket/blob/main/misc/logo.png?raw=true)
 
 [![Build status](https://awitec.visualstudio.com/Awitec/_apis/build/status/bucket)](https://awitec.visualstudio.com/Awitec/_build/latest?definitionId=51)
 
@@ -43,8 +43,8 @@ Imagine we have a folder with following structure representing our simple demo d
 This app is just an echo server with a nginx proxy in front of it.\
 Our compose files could look like this:
 
-backend: [docker-compose.yml](https://github.com/martinstanek/bucket/blob/develop/tst/Bucket.Tests/Bundle/backend/docker-compose.yml)\
-proxy: [docker-compose.yml](https://github.com/martinstanek/bucket/blob/develop/tst/Bucket.Tests/Bundle/proxy/docker-compose.yml)\
+backend: [docker-compose.yml](https://github.com/martinstanek/bucket/blob/main/tst/Bucket.Tests/Bundle/backend/docker-compose.yml)\
+proxy: [docker-compose.yml](https://github.com/martinstanek/bucket/blob/main/tst/Bucket.Tests/Bundle/proxy/docker-compose.yml)\
 
 And the manifest.json:
 
@@ -86,5 +86,5 @@ Followed on the target machine:
 
 Should result in two happy compose stacks up&running.
 
-Happy Bundling,\
+Happy Bundling,
 Martin
