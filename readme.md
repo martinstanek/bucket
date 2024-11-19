@@ -1,10 +1,8 @@
 ## The Bucket Project
 
- *... a something somewhere between DOCKER RUN and CNAB.*
+ *... a simple docker compose wrapper/cli tool/library for creating transferable single file bundles*
 
 ![logo](https://github.com/martinstanek/bucket/blob/develop/misc/logo.png?raw=true)
-
-Utilise your docker-compose files to create transferable Docker bundles.
 
 [![Build status](https://awitec.visualstudio.com/Awitec/_apis/build/status/bucket)](https://awitec.visualstudio.com/Awitec/_build/latest?definitionId=51)
 
@@ -28,38 +26,65 @@ Arguments:
         If no directory provided, the current executable directory will be used
     -v, --verbose : Turn on internal logs
 ```
+### How to use
+
+Imagine we have a folder with following structure representing our simple demo docker based application:
 
 ```
-% ./bucket --bundle ./bundle.json
-% ./bucket --install ./gfms-machinemonitor.dap.tar.gz --output machinemonitor
+/my-app
+    -- /backend
+        -- docker-compose.yml        
+    -- /proxy
+        -- /config
+            -- api-gateway.comf
+        -- docker-compose.yml
+ -- manifest.json 
 ```
+This app is just an echo server with a nginx proxy in front of it.\
+Our compose files could look like this:
 
-### Sample Manifest
+backend: [docker-compose.yml](https://github.com/martinstanek/bucket/blob/develop/tst/Bucket.Tests/Bundle/backend/docker-compose.yml)\
+proxy: [docker-compose.yml](https://github.com/martinstanek/bucket/blob/develop/tst/Bucket.Tests/Bundle/proxy/docker-compose.yml)\
+manifest:
 
 ```json
 {
   "Info": {
-    "Name": "TestBundle",
-    "Description": "This a first *.dap definition ever ...",
+    "Name": "bucket-test-bundle",
+    "Description": "Simple .DAP definition example",
     "Version": "0.1.0"
   },
   "Configuration": {
     "FetchImages": true
   },
   "Images": [
-    {
-      "Alias": "image1",
-      "FullName": "registry/image1:tag"
-    },
-    {
-      "Alias": "image2",
-      "FullName": "registry/image2:tag"
-    }
+    { "Alias": "backend", "FullName": "docker.io/hashicorp/http-echo:1.0" },
+    { "Alias": "proxy", "FullName": "docker.io/nginx:1.23.4" }
   ],
   "Stacks": [
-    "./test"
+    "backend",
+    "proxy"
   ]
 }
 ```
 
+Let's either move our bucket binary next to the manifest.json file, or use absolute file paths.
 
+Then by hitting: 
+
+```
+% ./bucket --bundle ./bundle.json
+```
+
+we'll generate **bucket-test-bundle.dap.tar.gz**
+
+Then on the target machine:
+
+```
+% ./bucket --install  ./bucket-test-bundle.dap.tar.gz --output ./my-app-folder
+```
+
+Should result in two happy compose stacks up&running.
+
+Happy Bundling,
+Martin

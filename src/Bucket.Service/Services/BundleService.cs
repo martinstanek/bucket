@@ -132,7 +132,7 @@ public sealed class BundleService : IBundleService
             await DownStacksAsync(bundleManifest, directory, cancellationToken);
             await RemoveStackArtifactsAsync(bundleManifest, cancellationToken);
             
-            Directory.Delete(directory);
+            Directory.Delete(directory, recursive: true);
             
             return;
         }
