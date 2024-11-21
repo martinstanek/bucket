@@ -71,7 +71,7 @@ And the manifest.json:
 
 Let's either move our bucket binary next to the manifest.json file, or use absolute file paths.
 
-Then by hitting: 
+Then by hitting:
 
 ```
 % ./bucket --bundle ./bundle.json
