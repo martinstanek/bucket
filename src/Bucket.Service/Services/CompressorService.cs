@@ -12,10 +12,10 @@ namespace Bucket.Service.Services;
 public sealed class CompressorService : ICompressorService
 {
     public async Task<string> PackBundleAsync(
-        BundleManifest bundleDefinition, 
-        string bundleDirectory, 
-        string outputDirectory, 
-        string extension, 
+        BundleManifest bundleDefinition,
+        string bundleDirectory,
+        string outputDirectory,
+        string extension,
         CancellationToken cancellationToken)
     {
         Guard.Against.NullOrWhiteSpace(bundleDirectory);
@@ -29,18 +29,23 @@ public sealed class CompressorService : ICompressorService
 
         var bundleName = $"{bundleDefinition.Info.Name}{extension}";
         var bundlePath = Path.Combine(outputDirectory, bundleName);
-        
+
         await using var fs = new FileStream(bundlePath, FileMode.CreateNew, FileAccess.Write);
         await using var gz = new GZipStream(fs, CompressionMode.Compress, leaveOpen: true);
+        await using var tar = new TarWriter(gz, leaveOpen: false);
 
-        await TarFile.CreateFromDirectoryAsync(bundleDirectory, gz, includeBaseDirectory: false, cancellationToken);
+        foreach (var file in Directory.EnumerateFiles(bundleDirectory, "*", SearchOption.AllDirectories))
+        {
+            var relativePath = Path.GetRelativePath(bundleDirectory, file);
+            await tar.WriteEntryAsync(file, relativePath, cancellationToken);
+        }
 
         return bundlePath;
     }
 
     public async Task UnpackBundleAsync(
-        string bundlePath, 
-        string outputDirectory, 
+        string bundlePath,
+        string outputDirectory,
         CancellationToken cancellationToken)
     {
         Guard.Against.NullOrWhiteSpace(bundlePath);
@@ -52,7 +57,7 @@ public sealed class CompressorService : ICompressorService
         }
 
         var tempFile = Path.Combine(outputDirectory, Guid.NewGuid().ToString());
-        
+
         await using var inputStream = File.OpenRead(bundlePath);
         await using (var outputFileStream = File.Create(tempFile))
         {
