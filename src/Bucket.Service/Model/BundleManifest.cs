@@ -1,4 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.IO;
+using System.Text.Json;
+using Ardalis.GuardClauses;
+using Bucket.Service.Serialization;
 
 namespace Bucket.Service.Model;
 
@@ -19,6 +23,25 @@ public sealed record BundleManifest
         Images = [],
         Stacks = []
     };
+
+    public static bool TryParseFromPath(string manifestPath, out BundleManifest? definition)
+    {
+        Guard.Against.NullOrWhiteSpace(manifestPath);
+
+        var content = File.ReadAllText(manifestPath);
+        definition = default;
+
+        try
+        {
+            definition = JsonSerializer.Deserialize(content, SourceGenerationContext.Default.BundleManifest);
+
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
 }
 
 public sealed record Info 
