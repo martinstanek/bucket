@@ -1,11 +1,9 @@
 ﻿using System;
 using System.IO;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Bucket.Service.Model;
-using Bucket.Service.Serialization;
 using Ardalis.GuardClauses;
 
 namespace Bucket.Service.Services;
@@ -49,7 +47,7 @@ public sealed class BundleService : IBundleService
             return;
         }
 
-        if (!TryParseBundleManifest(manifestPath, out var bundleDefinition) || bundleDefinition is null) 
+        if (!BundleManifest.TryParseFromPath(manifestPath, out var bundleDefinition) || bundleDefinition is null)
         {
             _output.WriteLine("Failed to find manifest file");
             
@@ -99,7 +97,7 @@ public sealed class BundleService : IBundleService
 
         var manifestPath = Path.Combine(outputDirectory, ManifestFile);
 
-        if (TryParseBundleManifest(manifestPath, out var bundleManifest) && bundleManifest is not null)
+        if (BundleManifest.TryParseFromPath(manifestPath, out var bundleManifest) && bundleManifest is not null)
         {
             await InstallBundleAsync(bundleManifest, outputDirectory, cancellationToken);
             
@@ -125,7 +123,7 @@ public sealed class BundleService : IBundleService
             return;
         }
         
-        if (TryParseBundleManifest(manifestPath, out var bundleManifest) && bundleManifest is not null)
+        if (BundleManifest.TryParseFromPath(manifestPath, out var bundleManifest) && bundleManifest is not null)
         {
             var directory = Path.GetDirectoryName(manifestPath) ?? string.Empty;
             
@@ -156,7 +154,7 @@ public sealed class BundleService : IBundleService
             return;
         }
         
-        if (TryParseBundleManifest(manifestPath, out var bundleManifest) && bundleManifest is not null)
+        if (BundleManifest.TryParseFromPath(manifestPath, out var bundleManifest) && bundleManifest is not null)
         {
             await StopStacksAsync(bundleManifest, cancellationToken);
             
@@ -182,7 +180,7 @@ public sealed class BundleService : IBundleService
             return;
         }
         
-        if (TryParseBundleManifest(manifestPath, out var bundleManifest) && bundleManifest is not null)
+        if (BundleManifest.TryParseFromPath(manifestPath, out var bundleManifest) && bundleManifest is not null)
         {
             var directory = Path.GetDirectoryName(manifestPath) ?? string.Empty;
             
@@ -387,23 +385,6 @@ public sealed class BundleService : IBundleService
             }
 
             _output.WriteLine(await _dockerService.PullImageAsync(image.FullName, cancellationToken));
-        }
-    }
-
-    private static bool TryParseBundleManifest(string manifestPath, out BundleManifest? definition)
-    {
-        var content = File.ReadAllText(manifestPath);
-        definition = default;
-
-        try
-        {
-            definition = JsonSerializer.Deserialize(content, SourceGenerationContext.Default.BundleManifest);
-
-            return true;
-        }
-        catch
-        {
-            return false;
         }
     }
 

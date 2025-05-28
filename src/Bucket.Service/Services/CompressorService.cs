@@ -32,8 +32,13 @@ public sealed class CompressorService : ICompressorService
         
         await using var fs = new FileStream(bundlePath, FileMode.CreateNew, FileAccess.Write);
         await using var gz = new GZipStream(fs, CompressionMode.Compress, leaveOpen: true);
+        await using var tar = new TarWriter(gz, leaveOpen: false);
 
-        await TarFile.CreateFromDirectoryAsync(bundleDirectory, gz, includeBaseDirectory: false, cancellationToken);
+        foreach (var file in Directory.EnumerateFiles(bundleDirectory, "*", SearchOption.AllDirectories))
+        {
+            var relativePath = Path.GetRelativePath(bundleDirectory, file);
+            await tar.WriteEntryAsync(file, relativePath, cancellationToken);
+        }
 
         return bundlePath;
     }

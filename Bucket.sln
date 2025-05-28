@@ -18,6 +18,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "misc", "misc", "{9FFA0766-E
 		readme.md = readme.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bucket.Engine", "src\Bucket.Engine\Bucket.Engine.csproj", "{C6D01EC9-832E-49C5-AFD4-9609CA3710AD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,6 +38,10 @@ Global
 		{2B8FFA7F-815C-4787-9D7B-034AE14C4703}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2B8FFA7F-815C-4787-9D7B-034AE14C4703}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2B8FFA7F-815C-4787-9D7B-034AE14C4703}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C6D01EC9-832E-49C5-AFD4-9609CA3710AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C6D01EC9-832E-49C5-AFD4-9609CA3710AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C6D01EC9-832E-49C5-AFD4-9609CA3710AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C6D01EC9-832E-49C5-AFD4-9609CA3710AD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -44,6 +50,7 @@ Global
 		{03E02B11-F617-44E6-940D-2DAB9A0ABBE2} = {98C7C5D9-DD81-4982-8D3A-FD2C9244B900}
 		{B45E7491-BEC7-4BD0-AE4A-2314FA6D4F03} = {98C7C5D9-DD81-4982-8D3A-FD2C9244B900}
 		{2B8FFA7F-815C-4787-9D7B-034AE14C4703} = {16AF93F3-BFCF-440C-810B-8C1A424DBF07}
+		{C6D01EC9-832E-49C5-AFD4-9609CA3710AD} = {98C7C5D9-DD81-4982-8D3A-FD2C9244B900}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {35A8EA8B-49B4-4127-A369-5A520724E2B4}
