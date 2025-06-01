@@ -15,7 +15,7 @@ public static class ServiceCollectionExtensions
             .AddArgument("b", "bundle", "Bundle given manifest", "Either the manifest path is provided, or a valid manifest is searched in the current directory")
             .AddArgument("i", "install", "Install given bundle", "The path to the bundle is required", ArgumentValueRequirement.MustHave)
             .AddArgument("r", "remove", "Uninstall and remove given bundle", "The path to the bundle folder is required", ArgumentValueRequirement.MustHave)
-            .AddArgument("s", "start", "Start given bundle", "The path to the bundle folder is required", ArgumentValueRequirement.MustHave)
+            .AddArgument("s", "start", "Start given bundle", "The path to the bundle manifest is required", ArgumentValueRequirement.MustHave)
             .AddArgument("t", "stop", "Stop given bundle", "The path to the bundle folder is required", ArgumentValueRequirement.MustHave)
             .AddArgument("o", "output", "Path to the output file or directory", ArgumentValueRequirement.MustHave)
             .AddArgument("w", "workdir", "Path to the working directory during bundling", "If no directory provided, the current executable directory will be used", ArgumentValueRequirement.MustHave)
