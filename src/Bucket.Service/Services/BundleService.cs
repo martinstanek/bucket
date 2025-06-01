@@ -250,7 +250,7 @@ public sealed class BundleService : IBundleService
         var exportDirectory = Path.Combine(workDir, ExportFolder);
 
         Directory.CreateDirectory(exportDirectory);
-        Console.WriteLine($"Exporting images into: {exportDirectory}");
+        _output.WriteLine($"Exporting images into: {exportDirectory}");
 
         await Parallel.ForEachAsync(bundleDefinition.Images, cancellationToken, async (image, _) =>
         {
