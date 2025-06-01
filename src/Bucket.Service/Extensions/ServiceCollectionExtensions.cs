@@ -20,7 +20,7 @@ public static class ServiceCollectionExtensions
             .AddArgument("o", "output", "Path to the output file or directory", ArgumentValueRequirement.MustHave)
             .AddArgument("w", "workdir", "Path to the working directory during bundling", "If no directory provided, the current executable directory will be used", ArgumentValueRequirement.MustHave)
             .AddArgument("v", "verbose", "Turn on internal logs", ArgumentValueRequirement.CanNotHave);
-            
+
         services
             .AddLogging()
             .AddSingleton(output)

@@ -44,9 +44,9 @@ public sealed record BundleManifest
     }
 }
 
-public sealed record Info 
+public sealed record Info
 {
-    public required string Name { get; init; }    
+    public required string Name { get; init; }
 
     public required string Description { get; init; }
 

@@ -1,5 +1,5 @@
 services:
-  
+
   echo:
     hostname: echo
     container_name: echo
@@ -9,7 +9,7 @@ services:
     networks:
       - bucket
     restart: unless-stopped
-  
+
 networks:
   bucket:
     name: bucket
