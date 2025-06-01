@@ -14,17 +14,20 @@ public sealed class BucketWorker : IHostedService
     private readonly IHostApplicationLifetime _lifetime;
     private readonly IBundleService _bundleService;
     private readonly ILogger<BucketWorker> _logger;
+    private readonly IOutput _output;
     private readonly Arguments _arguments;
 
     public BucketWorker(
         IHostApplicationLifetime lifetime,
         IBundleService bundleService,
+        IOutput output,
         Arguments arguments,
         ILogger<BucketWorker> logger)
     {
         _bundleService = bundleService;
         _arguments = arguments;
         _lifetime = lifetime;
+        _output = output;
         _logger = logger;
     }
 
@@ -39,7 +42,7 @@ public sealed class BucketWorker : IHostedService
             .WithHelpCommand(HandleHelpAsync)
             .WithInvalidArguments(HandleInvalidArgumentsAsync)
             .Build();
-        
+
         try
         {
             await action();
@@ -49,12 +52,11 @@ public sealed class BucketWorker : IHostedService
             var error = _arguments.ContainsOption("v")
                 ? e.ToString()
                 : e.Message;
-            
-            Console.WriteLine($"Unexpected error: {error}");
-            
+
+            _output.WriteLine($"Unexpected error: {error}");
             _logger.LogError(e, e.Message);
         }
-        
+
         _lifetime.StopApplication();
     }
 
@@ -64,22 +66,22 @@ public sealed class BucketWorker : IHostedService
 
         return Task.CompletedTask;
     }
-    
+
     private Task HandleInvalidArgumentsAsync(string message)
     {
         return Task.Run(() =>
         {
-            Console.WriteLine(message);
-            Console.WriteLine(_arguments.GetHelp());    
+            _output.WriteLine(message);
+            _output.WriteLine(_arguments.GetHelp());
         });
     }
-    
+
     private Task HandleHelpAsync()
     {
         return Task.Run(() =>
-        { 
-            Console.WriteLine($"bucket by martinstanek {Assembly.GetEntryAssembly()?.GetName().Version}");
-            Console.WriteLine(_arguments.GetHelp());    
+        {
+            _output.WriteLine($"bucket by martinstanek {Assembly.GetEntryAssembly()?.GetName().Version}");
+            _output.WriteLine(_arguments.GetHelp());
         });
     }
 }
