@@ -18,16 +18,16 @@ public sealed class BucketWorkerDockerTests
         var bundleWorker = context.GetBucketWorker("--bundle", "./Bundle/manifest.json", "--workdir", context.Workdir, "--output", context.Workdir);
         var installWorker = context.GetBucketWorker("--install",  context.BundlePath, "--output", context.BundleFolderPath);
         var removeWorker = context.GetBucketWorker("--remove", context.BundleManifestPath);
-        
+
         await bundleWorker.StartAsync(CancellationToken.None);
         await installWorker.StartAsync(CancellationToken.None);
         await removeWorker.StartAsync(CancellationToken.None);
     }
-    
+
     private sealed class BucketWorkerTestContext : IDisposable
     {
         private readonly string _workDir = Path.Combine("./", Guid.NewGuid().ToString("N"));
-        
+
         public BucketWorker GetBucketWorker(params string[] args)
         {
             var output = new Mock<IOutput>();
@@ -36,7 +36,7 @@ public sealed class BucketWorkerDockerTests
                 .AddBucket(output.Object, args)
                 .RemoveAll<IHostApplicationLifetime>()
                 .AddSingleton(lideCycle.Object);
-            
+
             return services
                 .BuildServiceProvider()
                 .GetRequiredService<BucketWorker>();
@@ -53,9 +53,9 @@ public sealed class BucketWorkerDockerTests
         internal string Workdir => _workDir;
 
         internal string BundlePath => Path.Combine(_workDir, "bucket-test-bundle.dap.tar.gz");
-        
+
         internal string BundleFolderPath => Path.Combine(_workDir, "dap");
-        
+
         internal string BundleManifestPath => Path.Combine(BundleFolderPath, "manifest.json");
     }
 }

@@ -1,5 +1,5 @@
 services:
-  
+
   nginx:
     hostname: nginx
     container_name: nginx
@@ -11,7 +11,7 @@ services:
     volumes:
       - ./config:/etc/nginx/conf.d
     restart: unless-stopped
-    
+
 networks:
   bucket:
     external: true

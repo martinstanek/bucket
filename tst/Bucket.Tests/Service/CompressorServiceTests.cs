@@ -1,61 +1,34 @@
-﻿using Bucket.Service.Model;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Bucket.Service.Model;
 using Bucket.Service.Services;
-using Xunit;
-using System.Threading;
 using Shouldly;
+using Xunit;
 
 namespace Bucket.Tests.Service;
 
-public class CompressorServiceTests
+public sealed class CompressorServiceTests
 {
     [Fact]
-    public async Task PackBundleAsync_CreatesArchiveWithAllFiles_IncludingHidden()
+    public async Task PackUnpack_InputIsValid_AllFilesArePresent()
     {
-        var extension = ".tar.gz";
-        var hiddenFile = ".env";
-        var visibleFile = "docker-compose.yml";
-        var bundleManifest = BundleManifest.Empty with
-        {
-            Info = Info.Empty with
-            {
-                Name = "testBundle"
-            }
-        };
-
-        var tempRoot = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-        var bundleDir = Path.Combine(tempRoot, "bundle");
-        var packedDir = Path.Combine(tempRoot, "packed");
-        var unpackedDir = Path.Combine(tempRoot, "unpacked");
-        var visibleFilePath = Path.Combine(bundleDir, visibleFile);
-        var hiddenFilePath = Path.Combine(bundleDir, hiddenFile);
-        var unpackedVisibleFilePath = Path.Combine(unpackedDir, visibleFile);
-        var unpackedHiddenFilePath = Path.Combine(unpackedDir, hiddenFile);
-
-        Directory.CreateDirectory(tempRoot);
-        Directory.CreateDirectory(bundleDir);
-        Directory.CreateDirectory(packedDir);
-        Directory.CreateDirectory(unpackedDir);
-
-        await File.WriteAllTextAsync(visibleFilePath, string.Empty);
-        await File.WriteAllTextAsync(hiddenFilePath, string.Empty);
-
         var compressor = new CompressorService();
+        var validManifest = BundleManifest.TryParseFromPath("./Bundle/manifest.json", out var manifest);
+        var tempDirectoryPath = $"./{DateTime.Now:yyyyMMddhhss}";
+        var archivePath = Path.Combine(tempDirectoryPath, "bucket-test-bundle.tar.gz");
 
-        var bundlePath = await compressor.PackBundleAsync(bundleManifest, bundleDir, packedDir, extension, cancellationToken: default);
+        Directory.CreateDirectory(tempDirectoryPath);
 
-        bundlePath.ShouldNotBeNullOrEmpty();
-        File.Exists(bundlePath).ShouldBeTrue();
+        validManifest.ShouldBeTrue();
+        manifest.ShouldNotBeNull();
+        Directory.Exists(tempDirectoryPath).ShouldBeTrue();
 
-        await compressor.UnpackBundleAsync(bundlePath, unpackedDir, cancellationToken: default);
+        await compressor.PackBundleAsync(manifest, "./Bundle", tempDirectoryPath, ".tar.gz", CancellationToken.None);
+        await compressor.UnpackBundleAsync(archivePath, tempDirectoryPath, CancellationToken.None);
 
-        File.Exists(unpackedVisibleFilePath).ShouldBeTrue();
-        File.Exists(unpackedHiddenFilePath).ShouldBeTrue();
+        File.Exists(Path.Combine(tempDirectoryPath, "backend", "docker-compose.yml")).ShouldBeTrue();
+        File.Exists(Path.Combine(tempDirectoryPath, "backend", ".env")).ShouldBeTrue();
+        File.Exists(Path.Combine(tempDirectoryPath, "proxy", "docker-compose.yml")).ShouldBeTrue();
+        File.Exists(Path.Combine(tempDirectoryPath, "proxy", "config", "api-gateway.conf")).ShouldBeTrue();
 
-        Directory.Delete(tempRoot, recursive: true);
+        Directory.Delete(tempDirectoryPath, recursive: true);
     }
 }

@@ -17,7 +17,7 @@ public sealed class ActionBuilder
     public ActionBuilder WithInvalidArguments(Func<string, Task> onInvalidArguments)
     {
         _taskToFallback = () => onInvalidArguments("Invalid arguments");
-        
+
         return this;
     }
 
@@ -40,7 +40,7 @@ public sealed class ActionBuilder
 
         return this;
     }
-    
+
     public ActionBuilder WithRemoveCommand(Func<string, Task> onUninstallCommand)
     {
         if (IsRemoveCommand(out var bundleFolderPath))
@@ -83,8 +83,8 @@ public sealed class ActionBuilder
 
     public Func<Task> Build()
     {
-        return _taskToProcess 
-               ?? _taskToFallback 
+        return _taskToProcess
+               ?? _taskToFallback
                ?? (() => Task.CompletedTask);
     }
 
@@ -93,7 +93,7 @@ public sealed class ActionBuilder
         manifestPath = _arguments.GetOptionValue("b");
         outputBundlePath = _arguments.GetOptionValue("o");
         workingDirectory = _arguments.GetOptionValue("w");
-       
+
         return _arguments.ContainsOptions(exclusively: ["b"], optionally: ["o", "v", "d", "w"]);
     }
 
@@ -106,7 +106,7 @@ public sealed class ActionBuilder
         {
             return false;
         }
-        
+
         bundlePath = _arguments.GetOptionValue("i");
         outputDirectory = _arguments.GetOptionValue("o");
 
@@ -123,7 +123,7 @@ public sealed class ActionBuilder
     {
         return IsSingleOptionCommandWithValue("t", out bundleFolderPath);
     }
-    
+
     private bool IsStartCommand(out string bundleFolderPath)
     {
         return IsSingleOptionCommandWithValue("s", out bundleFolderPath);
@@ -138,11 +138,11 @@ public sealed class ActionBuilder
     {
         var valid = _arguments.ContainsOptions(exclusively: [option], optionally: ["v"])
                     && !string.IsNullOrWhiteSpace(_arguments.GetOptionValue(option));
-        
-        bundleFolderPath = valid 
+
+        bundleFolderPath = valid
             ? _arguments.GetOptionValue(option)
             : string.Empty;
-        
+
         return valid;
     }
 }

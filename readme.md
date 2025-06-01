@@ -18,7 +18,7 @@ Arguments:
     -r, --remove : Uninstall and remove given bundle
         The path to the bundle folder is required
     -s, --start : Start given bundle
-        The path to the bundle folder is required
+        The path to the bundle manifest is required
     -t, --stop : Stop given bundle
         The path to the bundle folder is required
     -o, --output : Path to the output file or directory
@@ -71,7 +71,7 @@ And the manifest.json:
 
 Let's either move our bucket binary next to the manifest.json file, or use absolute file paths.
 
-Then by hitting: 
+Then by hitting:
 
 ```
 % ./bucket --bundle ./bundle.json

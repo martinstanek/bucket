@@ -1,11 +1,9 @@
 ﻿using System;
 using System.IO;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Bucket.Service.Model;
-using Bucket.Service.Serialization;
 using Ardalis.GuardClauses;
 
 namespace Bucket.Service.Services;
@@ -19,7 +17,7 @@ public sealed class BundleService : IBundleService
     private const string ExportFolder = "_export";
     private const string StacksFolder = "_stacks";
     private const string BundleFolder = "_bundle";
-    
+
     private readonly IFileSystemService _fileSystemService;
     private readonly ICompressorService _compressorService;
     private readonly IDockerService _dockerService;
@@ -43,25 +41,25 @@ public sealed class BundleService : IBundleService
     public async Task BundleAsync(string manifestPath, string outputBundlePath, string workingDirectory, CancellationToken cancellationToken = default)
     {
         Guard.Against.NullOrWhiteSpace(manifestPath);
-        
+
         if (!await _dockerService.IsDockerRunningAsync(cancellationToken))
         {
             return;
         }
 
-        if (!TryParseBundleManifest(manifestPath, out var bundleDefinition) || bundleDefinition is null) 
+        if (!BundleManifest.TryParseFromPath(manifestPath, out var bundleDefinition) || bundleDefinition is null)
         {
             _output.WriteLine("Failed to find manifest file");
-            
+
             return;
         }
-        
+
         var outputDir = GetWorkingDirectory(outputBundlePath);
         var workDir = GetWorkingDirectory(workingDirectory);
-    
+
         _output.WriteLine("The manifest found and parsed:");
         _output.WriteLine($"{bundleDefinition.Info.Name} - {bundleDefinition.Info.Version}");
-        
+
         _logger.LogInformation($"Manifest: {manifestPath}");
         _logger.LogInformation($"Output: {outputDir}");
         _logger.LogInformation($"Workdir: {workDir}");
@@ -82,7 +80,7 @@ public sealed class BundleService : IBundleService
         {
             return;
         }
-        
+
         if (!File.Exists(bundlePath))
         {
             _output.WriteLine($"The bundle '{bundlePath}' was not found");
@@ -94,49 +92,49 @@ public sealed class BundleService : IBundleService
         {
             Directory.CreateDirectory(outputDirectory);
         }
-        
+
         await _compressorService.UnpackBundleAsync(bundlePath, outputDirectory, cancellationToken);
 
         var manifestPath = Path.Combine(outputDirectory, ManifestFile);
 
-        if (TryParseBundleManifest(manifestPath, out var bundleManifest) && bundleManifest is not null)
+        if (BundleManifest.TryParseFromPath(manifestPath, out var bundleManifest) && bundleManifest is not null)
         {
             await InstallBundleAsync(bundleManifest, outputDirectory, cancellationToken);
-            
+
             return;
         }
-        
+
         _output.WriteLine("Invalid bundle");
     }
 
     public async Task RemoveAsync(string manifestPath, CancellationToken cancellationToken = default)
     {
         Guard.Against.NullOrWhiteSpace(manifestPath);
-        
+
         if (!await _dockerService.IsDockerRunningAsync(cancellationToken))
         {
             return;
         }
-        
+
         if (!File.Exists(manifestPath))
         {
             _output.WriteLine($"The manifest '{manifestPath}' was not found");
 
             return;
         }
-        
-        if (TryParseBundleManifest(manifestPath, out var bundleManifest) && bundleManifest is not null)
+
+        if (BundleManifest.TryParseFromPath(manifestPath, out var bundleManifest) && bundleManifest is not null)
         {
             var directory = Path.GetDirectoryName(manifestPath) ?? string.Empty;
-            
+
             await DownStacksAsync(bundleManifest, directory, cancellationToken);
             await RemoveStackArtifactsAsync(bundleManifest, cancellationToken);
-            
+
             Directory.Delete(directory, recursive: true);
-            
+
             return;
         }
-        
+
         _output.WriteLine("Invalid bundle");
     }
 
@@ -148,21 +146,21 @@ public sealed class BundleService : IBundleService
         {
             return;
         }
-        
+
         if (!File.Exists(manifestPath))
         {
             _output.WriteLine($"The manifest '{manifestPath}' was not found");
 
             return;
         }
-        
-        if (TryParseBundleManifest(manifestPath, out var bundleManifest) && bundleManifest is not null)
+
+        if (BundleManifest.TryParseFromPath(manifestPath, out var bundleManifest) && bundleManifest is not null)
         {
             await StopStacksAsync(bundleManifest, cancellationToken);
-            
+
             return;
         }
-        
+
         _output.WriteLine("Invalid bundle");
     }
 
@@ -174,23 +172,23 @@ public sealed class BundleService : IBundleService
         {
             return;
         }
-        
+
         if (!File.Exists(manifestPath))
         {
             _output.WriteLine($"The manifest '{manifestPath}' was not found");
 
             return;
         }
-        
-        if (TryParseBundleManifest(manifestPath, out var bundleManifest) && bundleManifest is not null)
+
+        if (BundleManifest.TryParseFromPath(manifestPath, out var bundleManifest) && bundleManifest is not null)
         {
             var directory = Path.GetDirectoryName(manifestPath) ?? string.Empty;
-            
+
             await UpStacksAsync(bundleManifest, directory, cancellationToken);
-            
+
             return;
         }
-        
+
         _output.WriteLine("Invalid bundle");
     }
 
@@ -209,7 +207,7 @@ public sealed class BundleService : IBundleService
         {
             throw new DirectoryNotFoundException(workingDirectory);
         }
-        
+
         if (!Directory.Exists(outputDirectory))
         {
             throw new DirectoryNotFoundException(outputDirectory);
@@ -218,7 +216,7 @@ public sealed class BundleService : IBundleService
         var bundleDirectory = Path.Combine(workingDirectory, BundleFolder);
 
         Directory.CreateDirectory(bundleDirectory);
-        
+
         _logger.LogInformation("Creating bundle");
         _logger.LogInformation($"Manifest: {manifestPath}");
         _logger.LogInformation($"Working directory: {workingDirectory}");
@@ -229,14 +227,14 @@ public sealed class BundleService : IBundleService
         CopyContent(bundleManifest, bundleDirectory, manifestPath, cancellationToken);
 
         await _compressorService.PackBundleAsync(
-            bundleManifest, 
-            bundleDirectory, 
-            outputDirectory,  
-            BundleExtension, 
+            bundleManifest,
+            bundleDirectory,
+            outputDirectory,
+            BundleExtension,
             cancellationToken);
 
         _logger.LogInformation("Deleting working directory");
-        
+
         Directory.Delete(bundleDirectory, recursive: true);
     }
 
@@ -252,7 +250,7 @@ public sealed class BundleService : IBundleService
         var exportDirectory = Path.Combine(workDir, ExportFolder);
 
         Directory.CreateDirectory(exportDirectory);
-        Console.WriteLine($"Exporting images into: {exportDirectory}");
+        _output.WriteLine($"Exporting images into: {exportDirectory}");
 
         await Parallel.ForEachAsync(bundleDefinition.Images, cancellationToken, async (image, _) =>
         {
@@ -273,7 +271,7 @@ public sealed class BundleService : IBundleService
         }
         else
         {
-            await PullImagesAsync(bundleManifest, cancellationToken);            
+            await PullImagesAsync(bundleManifest, cancellationToken);
         }
 
         await SpinUpStacksAsync(bundleManifest, directory, cancellationToken);
@@ -302,7 +300,7 @@ public sealed class BundleService : IBundleService
             {
                 break;
             }
-            
+
             var stackFolder = stack.Trim('.').Trim('/');
             var path = Path.Combine(directory, StacksFolder, stackFolder, ComposeFile);
 
@@ -312,7 +310,7 @@ public sealed class BundleService : IBundleService
             }
         }
     }
-    
+
     private async Task DownStacksAsync(BundleManifest bundleManifest, string directory, CancellationToken cancellationToken)
     {
         foreach (var stack in bundleManifest.Stacks)
@@ -321,7 +319,7 @@ public sealed class BundleService : IBundleService
             {
                 break;
             }
-            
+
             var stackFolder = stack.Trim('.').Trim('/');
             var path = Path.Combine(directory, StacksFolder, stackFolder, ComposeFile);
 
@@ -331,7 +329,7 @@ public sealed class BundleService : IBundleService
             }
         }
     }
-    
+
     private async Task StopStacksAsync(BundleManifest bundleManifest, CancellationToken cancellationToken)
     {
         foreach (var image in bundleManifest.Images)
@@ -340,7 +338,7 @@ public sealed class BundleService : IBundleService
             {
                 break;
             }
-            
+
             await _dockerService.StopContainerAsync(image.FullName, cancellationToken);
         }
     }
@@ -390,27 +388,10 @@ public sealed class BundleService : IBundleService
         }
     }
 
-    private static bool TryParseBundleManifest(string manifestPath, out BundleManifest? definition)
-    {
-        var content = File.ReadAllText(manifestPath);
-        definition = default;
-
-        try
-        {
-            definition = JsonSerializer.Deserialize(content, SourceGenerationContext.Default.BundleManifest);
-
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
     private void CopyContent(BundleManifest bundleManifest, string workDir, string manifestPath, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Copying content");
-        
+
         var stacksBundleDirectory = Path.Combine(workDir, StacksFolder);
 
         Directory.CreateDirectory(stacksBundleDirectory);
@@ -431,12 +412,12 @@ public sealed class BundleService : IBundleService
             if (!Directory.Exists(stackDirectory))
             {
                 _logger.LogWarning($"Stack directory not found: {stackDirectory}");
-                
+
                 continue;
             }
 
             _logger.LogInformation($"Copying stack folder: {stackDirectory} into {stackOutputDirectory}");
-            
+
             _fileSystemService.CopyDirectory(stackDirectory, stackOutputDirectory);
         }
     }

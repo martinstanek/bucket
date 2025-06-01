@@ -19,12 +19,12 @@ public sealed class BucketWorkerTests
     {
         var context = new BucketWorkerTestContext();
         var worker = context.GetBucketWorker(args);
-        
+
         await worker.StartAsync(CancellationToken.None);
-        
+
         context.HostLifeTime.Verify(v => v.StopApplication(), Times.Once);
         context.BundleService.Verify(v => v.BundleAsync(
-            It.IsAny<string>(), 
+            It.IsAny<string>(),
             It.IsAny<string>(),
             It.IsAny<string>(),
             It.IsAny<CancellationToken>()), Times.Never);
@@ -33,7 +33,7 @@ public sealed class BucketWorkerTests
             "./test",
             It.IsAny<CancellationToken>()), Times.Once);
     }
-    
+
     [Theory]
     [InlineData("-i", "./bundle.dap.tar.gz")]
     [InlineData("--install", "./bundle.dap.tar.gz")]
@@ -45,16 +45,16 @@ public sealed class BucketWorkerTests
     {
         var context = new BucketWorkerTestContext();
         var worker = context.GetBucketWorker(args);
-        
+
         await worker.StartAsync(CancellationToken.None);
-        
+
         context.HostLifeTime.Verify(v => v.StopApplication(), Times.Once);
         context.BundleService.Verify(v => v.InstallAsync(
             It.IsAny<string>(),
             It.IsAny<string>(),
             It.IsAny<CancellationToken>()), Times.Never);
     }
-    
+
     [Theory]
     [InlineData("-b")]
     [InlineData("--bundle")]
@@ -72,17 +72,17 @@ public sealed class BucketWorkerTests
     {
         var context = new BucketWorkerTestContext();
         var worker = context.GetBucketWorker(args);
-        
+
         await worker.StartAsync(CancellationToken.None);
-        
+
         context.HostLifeTime.Verify(v => v.StopApplication(), Times.Once);
         context.BundleService.Verify(v => v.BundleAsync(
-            It.IsAny<string>(), 
+            It.IsAny<string>(),
             It.IsAny<string>(),
             It.IsAny<string>(),
             It.IsAny<CancellationToken>()), Times.Once);
     }
-    
+
     [Theory]
     [InlineData("-b", "./manifest.json", "-o", "./output.dap.tar.gz")]
     [InlineData("--bundle", "./manifest.json", "--output", "./output.dap.tar.gz")]
@@ -90,12 +90,12 @@ public sealed class BucketWorkerTests
     {
         var context = new BucketWorkerTestContext();
         var worker = context.GetBucketWorker(args);
-        
+
         await worker.StartAsync(CancellationToken.None);
-        
+
         context.HostLifeTime.Verify(v => v.StopApplication(), Times.Once);
         context.BundleService.Verify(v => v.BundleAsync(
-            "./manifest.json", 
+            "./manifest.json",
             "./output.dap.tar.gz",
             string.Empty,
             It.IsAny<CancellationToken>()), Times.Once);
@@ -109,12 +109,12 @@ public sealed class BucketWorkerTests
     {
         var context = new BucketWorkerTestContext();
         var worker = context.GetBucketWorker(args);
-        
+
         await worker.StartAsync(CancellationToken.None);
-        
+
         context.HostLifeTime.Verify(v => v.StopApplication(), Times.Once);
         context.BundleService.Verify(v => v.BundleAsync(
-            "./manifest.json", 
+            "./manifest.json",
             "./output.dap.tar.gz",
             "./wrk",
             It.IsAny<CancellationToken>()), Times.Once);
@@ -127,15 +127,15 @@ public sealed class BucketWorkerTests
     {
         var context = new BucketWorkerTestContext();
         var worker = context.GetBucketWorker(args);
-        
+
         await worker.StartAsync(CancellationToken.None);
-        
+
         context.HostLifeTime.Verify(v => v.StopApplication(), Times.Once);
         context.BundleService.Verify(v => v.RemoveAsync(
-            "./bundle", 
+            "./bundle",
             It.IsAny<CancellationToken>()), Times.Once);
     }
-    
+
     [Theory]
     [InlineData("-r")]
     [InlineData("--remove")]
@@ -143,15 +143,15 @@ public sealed class BucketWorkerTests
     {
         var context = new BucketWorkerTestContext();
         var worker = context.GetBucketWorker(args);
-        
+
         await worker.StartAsync(CancellationToken.None);
-        
+
         context.HostLifeTime.Verify(v => v.StopApplication(), Times.Once);
         context.BundleService.Verify(v => v.RemoveAsync(
-            It.IsAny<string>(), 
+            It.IsAny<string>(),
             It.IsAny<CancellationToken>()), Times.Never);
     }
-    
+
     [Theory]
     [InlineData("-s", "./bundle/manifest.json")]
     [InlineData("--start", "./bundle/manifest.json")]
@@ -159,15 +159,15 @@ public sealed class BucketWorkerTests
     {
         var context = new BucketWorkerTestContext();
         var worker = context.GetBucketWorker(args);
-        
+
         await worker.StartAsync(CancellationToken.None);
-        
+
         context.HostLifeTime.Verify(v => v.StopApplication(), Times.Once);
         context.BundleService.Verify(v => v.StartAsync(
-            "./bundle/manifest.json", 
+            "./bundle/manifest.json",
             It.IsAny<CancellationToken>()), Times.Once);
     }
-    
+
     [Theory]
     [InlineData("-s")]
     [InlineData("--start")]
@@ -177,15 +177,15 @@ public sealed class BucketWorkerTests
     {
         var context = new BucketWorkerTestContext();
         var worker = context.GetBucketWorker(args);
-        
+
         await worker.StartAsync(CancellationToken.None);
-        
+
         context.HostLifeTime.Verify(v => v.StopApplication(), Times.Once);
         context.BundleService.Verify(v => v.StartAsync(
-            It.IsAny<string>(), 
+            It.IsAny<string>(),
             It.IsAny<CancellationToken>()), Times.Never);
     }
-    
+
     [Theory]
     [InlineData("-t", "./bundle")]
     [InlineData("--stop", "./bundle")]
@@ -193,15 +193,15 @@ public sealed class BucketWorkerTests
     {
         var context = new BucketWorkerTestContext();
         var worker = context.GetBucketWorker(args);
-        
+
         await worker.StartAsync(CancellationToken.None);
-        
+
         context.HostLifeTime.Verify(v => v.StopApplication(), Times.Once);
         context.BundleService.Verify(v => v.StopAsync(
-            "./bundle", 
+            "./bundle",
             It.IsAny<CancellationToken>()), Times.Once);
     }
-    
+
     [Theory]
     [InlineData("-t")]
     [InlineData("--stop")]
@@ -209,12 +209,12 @@ public sealed class BucketWorkerTests
     {
         var context = new BucketWorkerTestContext();
         var worker = context.GetBucketWorker(args);
-        
+
         await worker.StartAsync(CancellationToken.None);
-        
+
         context.HostLifeTime.Verify(v => v.StopApplication(), Times.Once);
         context.BundleService.Verify(v => v.StopAsync(
-            It.IsAny<string>(), 
+            It.IsAny<string>(),
             It.IsAny<CancellationToken>()), Times.Never);
     }
 
@@ -223,16 +223,16 @@ public sealed class BucketWorkerTests
     {
         var context = new BucketWorkerTestContext();
         var worker = context.GetBucketWorker();
-        
+
         await worker.StartAsync(CancellationToken.None);
-        
+
         context.HostLifeTime.Verify(v => v.StopApplication(), Times.Once);
         context.BundleService.Verify(v => v.InstallAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
         context.BundleService.Verify(v => v.StopAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
         context.BundleService.Verify(v => v.StartAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
         context.BundleService.Verify(v => v.BundleAsync(
-            It.IsAny<string>(), 
-            It.IsAny<string>(), 
+            It.IsAny<string>(),
+            It.IsAny<string>(),
             It.IsAny<string>(),
             It.IsAny<CancellationToken>()), Times.Never);
     }
@@ -251,7 +251,7 @@ public sealed class BucketWorkerTests
                 .AddSingleton(DockerService.Object)
                 .AddSingleton(FileSystemService.Object)
                 .AddSingleton(BundleService.Object);
-            
+
             return services
                 .BuildServiceProvider()
                 .GetRequiredService<BucketWorker>();
@@ -260,9 +260,9 @@ public sealed class BucketWorkerTests
         internal Mock<IHostApplicationLifetime> HostLifeTime { get; } = new();
 
         internal Mock<IBundleService> BundleService { get; } = new();
-        
+
         private Mock<IDockerService> DockerService { get; } = new();
-        
+
         private Mock<IFileSystemService> FileSystemService { get; } = new();
 
     }

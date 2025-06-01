@@ -7,14 +7,14 @@ namespace Bucket.Service.Services;
 public interface ICompressorService
 {
     Task<string> PackBundleAsync(
-        BundleManifest bundleDefinition, 
-        string bundleDirectory, 
+        BundleManifest bundleDefinition,
+        string bundleDirectory,
         string outputDirectory,
-        string extension, 
+        string extension,
         CancellationToken cancellationToken);
-    
+
     Task UnpackBundleAsync(
-        string bundlePath, 
-        string outputDirectory, 
+        string bundlePath,
+        string outputDirectory,
         CancellationToken cancellationToken);
 }

@@ -21,7 +21,7 @@ public sealed class ArgumentsTests
         options.ShouldNotBeEmpty();
         options.Count.ShouldBe(1);
     }
-    
+
     [Fact]
     public void GetOptions_InputIsValid_SingleOption_ReturnsOptions()
     {
@@ -34,7 +34,7 @@ public sealed class ArgumentsTests
         arguments.IsHelp.ShouldBeTrue();
         options.Count().ShouldBe(1);
     }
-    
+
     [Fact]
     public void GetOptions_InputContainsInValidOption_InvalidOptionIsIgnored()
     {
@@ -43,12 +43,12 @@ public sealed class ArgumentsTests
             .AddArgument("m", "manifest", "Path to the manifest file", ArgumentValueRequirement.MustHave);
 
         var options = arguments.GetOptions();
-        
+
         arguments.IsValid.ShouldBeTrue();
         options.Count.ShouldBe(2);
         options.ShouldNotContain(o => o.ShortName.Equals("x"));
     }
-    
+
     [Fact]
     public void GetOptions_InputIsInValid_ReturnsEmptyArray()
     {
@@ -63,7 +63,7 @@ public sealed class ArgumentsTests
         value.ShouldBeEmpty();
         options.ShouldBeEmpty();
     }
-    
+
     [Fact]
     public void GetOptions_InputIsEmpty_ReturnsEmptyArray()
     {
@@ -76,7 +76,7 @@ public sealed class ArgumentsTests
         arguments.IsValid.ShouldBeFalse();
         options.ShouldBeEmpty();
     }
-    
+
     [Fact]
     public void GetOptions_InputIsInValid_NoValueProvided_ReturnsEmptyArray()
     {
@@ -91,7 +91,7 @@ public sealed class ArgumentsTests
         value.ShouldBeEmpty();
         options.ShouldBeEmpty();
     }
-    
+
     [Fact]
     public void ContainsOption_InputIsValid_ReturnsTrue()
     {
@@ -102,7 +102,7 @@ public sealed class ArgumentsTests
         arguments.ContainsOption("i").ShouldBeTrue();
         arguments.ContainsOption("m").ShouldBeTrue();
     }
-    
+
     [Fact]
     public void ContainsOption_OptionIsNotPresent_ReturnsFalse()
     {
@@ -115,7 +115,7 @@ public sealed class ArgumentsTests
         arguments.ContainsOption("m").ShouldBeTrue();
         arguments.ContainsOption("b").ShouldBeFalse();
     }
-    
+
     [Fact]
     public void ContainsOptions_Exclusively_ContainsAll_ReturnsTrue()
     {
@@ -126,7 +126,7 @@ public sealed class ArgumentsTests
 
         arguments.ContainsOptions(["i", "s", "m"]).ShouldBeTrue();
     }
-    
+
     [Fact]
     public void ContainsOptions_NotExclusively_ContainsAll_ReturnsTrue()
     {
@@ -137,7 +137,7 @@ public sealed class ArgumentsTests
 
         arguments.ContainsOptions(["i", "s"], ["m"]).ShouldBeTrue();
     }
-    
+
     [Fact]
     public void ContainsOptions_AllExclusively_NotOptional_ReturnsTrue()
     {
@@ -148,7 +148,7 @@ public sealed class ArgumentsTests
 
         arguments.ContainsOptions(["i", "s"], ["f", "g"]).ShouldBeTrue();
     }
-    
+
     [Fact]
     public void ContainsOptions_Exclusively_NotContainsAll_ReturnsFalse()
     {
@@ -159,7 +159,7 @@ public sealed class ArgumentsTests
 
         arguments.ContainsOptions(["i", "s"]).ShouldBeFalse();
     }
-    
+
     [Fact]
     public void ContainsOptions_Exclusively_ContainsAllButThereIsMore_ReturnsFalse()
     {
@@ -170,7 +170,7 @@ public sealed class ArgumentsTests
 
         arguments.ContainsOptions(["i", "m"]).ShouldBeFalse();
     }
-    
+
     [Fact]
     public void AddArgument_ArgumentShortNameAlreadyExists_ThrowsInvalidOperationException()
     {
@@ -179,7 +179,7 @@ public sealed class ArgumentsTests
             .AddArgument("i", "installation", "Install manifest")
             .AddArgument("m", "manifest", "Path to the manifest file"));
     }
-    
+
     [Fact]
     public void AddArgument_ArgumentFullNameAlreadyExists_ThrowsInvalidOperationException()
     {
